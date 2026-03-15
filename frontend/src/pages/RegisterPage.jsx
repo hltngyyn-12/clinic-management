@@ -1,11 +1,14 @@
 import { useState } from "react";
 import axios from "axios";
 
-function LoginPage() {
+function RegisterPage() {
 
   const [form, setForm] = useState({
-    usernameOrEmail: "",
-    password: ""
+    username: "",
+    email: "",
+    password: "",
+    fullName: "",
+    role: "PATIENT"
   });
 
   const handleChange = (e) => {
@@ -21,7 +24,7 @@ function LoginPage() {
     try {
 
       const res = await axios.post(
-        "http://localhost:8080/api/auth/login",
+        "http://localhost:8080/api/auth/register",
         form
       );
 
@@ -30,44 +33,62 @@ function LoginPage() {
 
     } catch (error) {
       console.error(error);
-      alert("Login failed");
+      alert("Register failed");
     }
   };
 
   return (
     <div>
-      <h3>Login Page</h3>
+      <h3>Register</h3>
 
       <form style={{ maxWidth: "400px" }} onSubmit={handleSubmit}>
 
         <div className="mb-3">
-          <label className="form-label">Username or Email</label>
+          <label>Username</label>
 
           <input
             type="text"
-            name="usernameOrEmail"
+            name="username"
             className="form-control"
-            placeholder="Enter username or email"
-            value={form.usernameOrEmail}
             onChange={handleChange}
           />
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Password</label>
+          <label>Full Name</label>
+
+          <input
+            type="text"
+            name="fullName"
+            className="form-control"
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Email</label>
+
+          <input
+            type="email"
+            name="email"
+            className="form-control"
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Password</label>
 
           <input
             type="password"
             name="password"
             className="form-control"
-            placeholder="Enter password"
-            value={form.password}
             onChange={handleChange}
           />
         </div>
 
-        <button type="submit" className="btn btn-primary">
-          Login
+        <button type="submit" className="btn btn-success">
+          Register
         </button>
 
       </form>
@@ -75,4 +96,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default RegisterPage;
