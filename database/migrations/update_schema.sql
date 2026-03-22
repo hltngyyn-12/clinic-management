@@ -9,3 +9,6 @@ ALTER TABLE patient ADD gender VARCHAR(10);
 -- appointment
 ALTER TABLE appointment ADD appointment_time DATETIME;
 ALTER TABLE appointment ADD status VARCHAR(50);
+
+ALTER TABLE doctor ADD user_id BIGINT;
+ALTER TABLE doctor ADD CONSTRAINT fk_doctor_user FOREIGN KEY (user_id) REFERENCES users(id);
