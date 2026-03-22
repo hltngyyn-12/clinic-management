@@ -89,24 +89,34 @@ Stores patient information.
 
 ---
 
+
 ## appointments
 
-Stores appointment information.
+Stores appointment information between patients and doctors.
 
-| Column | Type | Description |
-|------|------|-------------|
-| id | BIGINT | Primary key |
-| patient_id | BIGINT | Reference to patients |
-| doctor_id | BIGINT | Reference to doctors |
-| appointment_date | DATE | Appointment date |
-| slot_time | TIME | Appointment time |
-| status | VARCHAR(20) | Appointment status |
-| reason | TEXT | Appointment reason |
-| deposit_amount | DECIMAL | Deposit amount |
-| payment_status | VARCHAR(20) | Payment status |
-| created_at | TIMESTAMP | Creation time |
+| Column           | Type        | Description                             |
+| ---------------- | ----------- | --------------------------------------- |
+| id               | BIGINT      | Primary key                             |
+| patient_id       | BIGINT      | Reference to patients                   |
+| doctor_id        | BIGINT      | Reference to doctors                    |
+| appointment_date | DATE        | Appointment date                        |
+| slot_time        | TIME        | Appointment time                        |
+| status           | VARCHAR(20) | Appointment status (PENDING, CANCELLED) |
+| reason           | TEXT        | Appointment reason                      |
+| deposit_amount   | DECIMAL     | Deposit amount (default = 0)            |
+| payment_status   | VARCHAR(20) | Payment status (UNPAID, PAID)           |
+| created_at       | TIMESTAMP   | Creation time (auto-generated)          |
 
 ---
+
+## Business Rules
+
+A doctor cannot have multiple appointments at the same time slot.
+A patient can book multiple appointments with different doctors.
+Appointment status includes:
+PENDING (default when created)
+CANCELLED (when user cancels)
+Payment is optional at booking time (default UNPAID).
 
 ## medical_records
 
