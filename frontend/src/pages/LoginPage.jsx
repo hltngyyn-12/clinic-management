@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 function LoginPage() {
 
@@ -7,6 +9,9 @@ function LoginPage() {
     usernameOrEmail: "",
     password: ""
   });
+
+  const { setUser } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({
@@ -19,17 +24,33 @@ function LoginPage() {
     e.preventDefault();
 
     try {
-
       const res = await axios.post(
         "http://localhost:8080/api/auth/login",
-        form
+        form,
+        { withCredentials: true }
       );
 
       alert(res.data.message);
-      console.log(res.data);
 
-    } catch (error) {
-      console.error(error);
+      // gọi /me để lấy user chuẩn
+      const me = await axios.get(
+        "http://localhost:8080/api/auth/me",
+        { withCredentials: true }
+      );
+
+      setUser(me.data);
+
+      // redirect theo role
+      if (me.data.role === "ADMIN") {
+        navigate("/admin");
+      } else if (me.data.role === "DOCTOR") {
+        navigate("/doctor");
+      } else {
+        navigate("/patient");
+      }
+
+    } catch (err) {
+      console.error(err);
       alert("Login failed");
     }
   };
@@ -41,34 +62,26 @@ function LoginPage() {
       <form style={{ maxWidth: "400px" }} onSubmit={handleSubmit}>
 
         <div className="mb-3">
-          <label className="form-label">Username or Email</label>
-
+          <label>Username or Email</label>
           <input
             type="text"
             name="usernameOrEmail"
             className="form-control"
-            placeholder="Enter username or email"
-            value={form.usernameOrEmail}
             onChange={handleChange}
           />
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Password</label>
-
+          <label>Password</label>
           <input
             type="password"
             name="password"
             className="form-control"
-            placeholder="Enter password"
-            value={form.password}
             onChange={handleChange}
           />
         </div>
 
-        <button type="submit" className="btn btn-primary">
-          Login
-        </button>
+        <button className="btn btn-primary">Login</button>
 
       </form>
     </div>
