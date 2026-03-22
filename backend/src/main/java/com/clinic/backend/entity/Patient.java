@@ -19,5 +19,10 @@ public class Patient {
     @JoinColumn(name = "user_id")
     private User user;
 
+    public Long getId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getId'");
+    }
+
     // getter setter
 }
