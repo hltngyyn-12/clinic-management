@@ -11,6 +11,8 @@ function RegisterPage() {
     role: "PATIENT"
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -21,7 +23,14 @@ function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // validate đơn giản frontend
+    if (!form.username || !form.email || !form.password || !form.fullName) {
+      alert("Please fill all fields");
+      return;
+    }
+
     try {
+      setLoading(true);
 
       const res = await axios.post(
         "http://localhost:8080/api/auth/register",
@@ -29,11 +38,21 @@ function RegisterPage() {
       );
 
       alert(res.data.message);
-      console.log(res.data);
+
+      // reset form
+      setForm({
+        username: "",
+        email: "",
+        password: "",
+        fullName: "",
+        role: "PATIENT"
+      });
 
     } catch (error) {
       console.error(error);
-      alert("Register failed");
+      alert(error.response?.data?.message || "Register failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,50 +64,54 @@ function RegisterPage() {
 
         <div className="mb-3">
           <label>Username</label>
-
           <input
             type="text"
             name="username"
             className="form-control"
+            value={form.username}
             onChange={handleChange}
           />
         </div>
 
         <div className="mb-3">
           <label>Full Name</label>
-
           <input
             type="text"
             name="fullName"
             className="form-control"
+            value={form.fullName}
             onChange={handleChange}
           />
         </div>
 
         <div className="mb-3">
           <label>Email</label>
-
           <input
             type="email"
             name="email"
             className="form-control"
+            value={form.email}
             onChange={handleChange}
           />
         </div>
 
         <div className="mb-3">
           <label>Password</label>
-
           <input
             type="password"
             name="password"
             className="form-control"
+            value={form.password}
             onChange={handleChange}
           />
         </div>
 
-        <button type="submit" className="btn btn-success">
-          Register
+        <button
+          type="submit"
+          className="btn btn-success"
+          disabled={loading}
+        >
+          {loading ? "Registering..." : "Register"}
         </button>
 
       </form>
