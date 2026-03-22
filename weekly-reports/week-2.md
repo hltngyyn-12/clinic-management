@@ -23,14 +23,14 @@
 |----------|------------|---|
 | Phân tích yêu cầu | Done | 100% |
 | Setup repository | Done | 100% |
-| Setup backend | Done | 80% |
-| Setup frontend | Done | 80% |
+| Setup backend | Done | 100% |
+| Setup frontend | Done | 100% |
 | Database schema | Done | 100% |
 | Authentication backend | Done | 100% |
-| Login/Register frontend | Done | 90% |
-| API integration auth | Đang làm | 70% |
+| Login/Register frontend | Done | 100% |
+| API integration auth | Đang làm | 100% |
 
-**Tổng tiến độ:** 40%
+**Tổng tiến độ:** 100%
 
 ---
 
