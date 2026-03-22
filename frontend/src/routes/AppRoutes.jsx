@@ -4,6 +4,10 @@ import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 
+function PatientPage() {
+  return <h2>Patient Dashboard</h2>;
+}
+
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -12,6 +16,7 @@ function AppRoutes() {
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="patient" element={<PatientPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
