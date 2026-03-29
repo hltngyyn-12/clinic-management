@@ -1,4 +1,4 @@
-package com.clinic.backend.controller;
+package com.clinic.backend.service;
 
 import com.clinic.backend.entity.Appointment;
 
@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-public interface appointmentService {
+public interface AppointmentService {
 
     Appointment create(Long userId, Long doctorId, LocalDate date, LocalTime time, String reason);
 
