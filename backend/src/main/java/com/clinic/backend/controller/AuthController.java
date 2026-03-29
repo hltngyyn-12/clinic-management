@@ -3,7 +3,7 @@ package com.clinic.backend.controller;
 import com.clinic.backend.dto.auth.AuthResponse;
 import com.clinic.backend.dto.auth.LoginRequest;
 import com.clinic.backend.dto.auth.RegisterRequest;
-import com.clinic.backend.security.CustomUserDetails;
+import com.clinic.backend.entity.User;
 import com.clinic.backend.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -34,14 +34,14 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication authentication) {
-        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+        User user = authService.getCurrentUser(authentication.getName());
 
         return ResponseEntity.ok(
                 Map.of(
-                        "userId", user.getUserId(),
+                        "userId", user.getId(),
                         "username", user.getUsername(),
                         "email", user.getEmail(),
-                        "role", user.getRole()
+                        "role", user.getRole().name()
                 )
         );
     }

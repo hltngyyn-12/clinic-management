@@ -6,6 +6,7 @@ import com.clinic.backend.dto.auth.RegisterRequest;
 import com.clinic.backend.entity.Role;
 import com.clinic.backend.entity.User;
 import com.clinic.backend.repository.UserRepository;
+import com.clinic.backend.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +17,14 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -46,7 +51,8 @@ public class AuthService {
                 "Đăng ký thành công",
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole().name()
+                user.getRole().name(),
+                null
         );
     }
 
@@ -68,12 +74,27 @@ public class AuthService {
             throw new RuntimeException("Sai tên đăng nhập, email hoặc mật khẩu");
         }
 
+        String token = jwtService.generateToken(
+                org.springframework.security.core.userdetails.User
+                        .withUsername(user.getUsername())
+                        .password(user.getPasswordHash())
+                        .roles(user.getRole().name())
+                        .build()
+        );
+
         return new AuthResponse(
                 "Đăng nhập thành công",
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole().name()
+                user.getRole().name(),
+                token
         );
+    }
+
+    public User getCurrentUser(String username) {
+        return userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username))
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
     }
 
     private void validateRegisterRequest(RegisterRequest request) {
