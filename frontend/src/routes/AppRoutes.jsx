@@ -8,6 +8,7 @@ import RegisterPage from "../pages/RegisterPage";
 import DoctorListPage from "../pages/DoctorListPage";
 import BookingPage from "../pages/BookingPage";
 import MyAppointmentsPage from "../pages/MyAppointmentsPage";
+import MedicalRecordPage from "../pages/MedicalRecordPage";
 
 // dashboard tạm
 function PatientPage() {
@@ -27,6 +28,7 @@ function AppRoutes() {
 
           {/* PATIENT */}
           <Route path="patient" element={<PatientPage />} />
+          <Route path="medical-records" element={<MedicalRecordPage />} />
 
           {/* BOOKING FLOW */}
           <Route path="doctors" element={<DoctorListPage />} />
