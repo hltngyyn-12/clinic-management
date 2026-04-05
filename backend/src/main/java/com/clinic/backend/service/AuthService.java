@@ -5,6 +5,7 @@ import com.clinic.backend.dto.auth.LoginRequest;
 import com.clinic.backend.dto.auth.RegisterRequest;
 import com.clinic.backend.entity.Role;
 import com.clinic.backend.entity.User;
+import com.clinic.backend.exception.ApiException;
 import com.clinic.backend.repository.UserRepository;
 import com.clinic.backend.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,12 +31,12 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         validateRegisterRequest(request);
 
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Tên đăng nhập đã tồn tại");
+        if (userRepository.existsByUsername(request.getUsername().trim())) {
+            throw new ApiException("Tên đăng nhập đã tồn tại");
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email đã được sử dụng");
+        if (userRepository.existsByEmail(request.getEmail().trim())) {
+            throw new ApiException("Email đã được sử dụng");
         }
 
         User user = new User();
@@ -68,10 +69,10 @@ public class AuthService {
         }
 
         User user = optionalUser.orElseThrow(() ->
-                new RuntimeException("Sai tên đăng nhập, email hoặc mật khẩu"));
+                new ApiException("Sai tên đăng nhập, email hoặc mật khẩu"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Sai tên đăng nhập, email hoặc mật khẩu");
+            throw new ApiException("Sai tên đăng nhập, email hoặc mật khẩu");
         }
 
         String token = jwtService.generateToken(
@@ -94,46 +95,46 @@ public class AuthService {
     public User getCurrentUser(String username) {
         return userRepository.findByUsername(username)
                 .or(() -> userRepository.findByEmail(username))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new ApiException("Không tìm thấy người dùng"));
     }
 
     private void validateRegisterRequest(RegisterRequest request) {
         if (request == null) {
-            throw new RuntimeException("Thiếu dữ liệu yêu cầu");
+            throw new ApiException("Thiếu dữ liệu yêu cầu");
         }
 
         if (isBlank(request.getUsername())) {
-            throw new RuntimeException("Tên đăng nhập không được để trống");
+            throw new ApiException("Tên đăng nhập không được để trống");
         }
 
         if (isBlank(request.getEmail())) {
-            throw new RuntimeException("Email không được để trống");
+            throw new ApiException("Email không được để trống");
         }
 
         if (isBlank(request.getPassword())) {
-            throw new RuntimeException("Mật khẩu không được để trống");
+            throw new ApiException("Mật khẩu không được để trống");
         }
 
         if (isBlank(request.getFullName())) {
-            throw new RuntimeException("Họ và tên không được để trống");
+            throw new ApiException("Họ và tên không được để trống");
         }
 
         if (isBlank(request.getRole())) {
-            throw new RuntimeException("Vai trò không được để trống");
+            throw new ApiException("Vai trò không được để trống");
         }
     }
 
     private void validateLoginRequest(LoginRequest request) {
         if (request == null) {
-            throw new RuntimeException("Thiếu dữ liệu yêu cầu");
+            throw new ApiException("Thiếu dữ liệu yêu cầu");
         }
 
         if (isBlank(request.getUsernameOrEmail())) {
-            throw new RuntimeException("Tên đăng nhập hoặc email không được để trống");
+            throw new ApiException("Tên đăng nhập hoặc email không được để trống");
         }
 
         if (isBlank(request.getPassword())) {
-            throw new RuntimeException("Mật khẩu không được để trống");
+            throw new ApiException("Mật khẩu không được để trống");
         }
     }
 
@@ -141,7 +142,7 @@ public class AuthService {
         try {
             return Role.valueOf(role.trim().toUpperCase());
         } catch (Exception e) {
-            throw new RuntimeException("Vai trò không hợp lệ. Chỉ chấp nhận: ADMIN, DOCTOR, PATIENT");
+            throw new ApiException("Vai trò không hợp lệ. Chỉ chấp nhận: ADMIN, DOCTOR, PATIENT");
         }
     }
 
