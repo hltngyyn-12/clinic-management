@@ -1,7 +1,12 @@
 package com.clinic.backend.service.impl;
 
-import com.clinic.backend.entity.*;
-import com.clinic.backend.repository.*;
+import com.clinic.backend.entity.Appointment;
+import com.clinic.backend.entity.Doctor;
+import com.clinic.backend.entity.Patient;
+import com.clinic.backend.exception.ApiException;
+import com.clinic.backend.repository.AppointmentRepository;
+import com.clinic.backend.repository.DoctorRepository;
+import com.clinic.backend.repository.PatientRepository;
 import com.clinic.backend.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,29 +26,34 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public Appointment create(Long userId, Long doctorId, LocalDate date, LocalTime time, String reason) {
 
-        // ❌ validate null
+        if (userId == null) {
+            throw new ApiException("Thiếu thông tin bệnh nhân");
+        }
+
+        if (doctorId == null) {
+            throw new ApiException("Thiếu thông tin bác sĩ");
+        }
+
         if (date == null || time == null) {
-            throw new RuntimeException("Date/time required");
+            throw new ApiException("Ngày hoặc giờ không được để trống");
         }
 
-        // ❌ không cho đặt quá khứ
         if (date.isBefore(LocalDate.now())) {
-            throw new RuntimeException("Cannot book in the past");
+            throw new ApiException("Không thể đặt lịch trong quá khứ");
         }
 
-        // ❌ check trùng lịch
         boolean exists = appointmentRepository
                 .existsByDoctorIdAndAppointmentDateAndSlotTime(doctorId, date, time);
 
         if (exists) {
-            throw new RuntimeException("Doctor already booked at this time");
+            throw new ApiException("Bác sĩ đã có lịch ở thời điểm này");
         }
 
         Patient patient = patientRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Patient not found"));
+                .orElseThrow(() -> new ApiException("Không tìm thấy bệnh nhân"));
 
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+                .orElseThrow(() -> new ApiException("Không tìm thấy bác sĩ"));
 
         Appointment ap = new Appointment();
         ap.setPatient(patient);
@@ -58,13 +68,25 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public List<Appointment> getMyAppointments(Long userId) {
+        if (userId == null) {
+            throw new ApiException("Thiếu thông tin bệnh nhân");
+        }
+
         return appointmentRepository.findByPatientId(userId);
     }
 
     @Override
     public void cancel(Long id) {
+        if (id == null) {
+            throw new ApiException("Thiếu mã lịch hẹn");
+        }
+
         Appointment ap = appointmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+                .orElseThrow(() -> new ApiException("Không tìm thấy lịch hẹn"));
+
+        if ("CANCELLED".equalsIgnoreCase(ap.getStatus())) {
+            throw new ApiException("Lịch hẹn đã được hủy trước đó");
+        }
 
         ap.setStatus("CANCELLED");
         appointmentRepository.save(ap);
