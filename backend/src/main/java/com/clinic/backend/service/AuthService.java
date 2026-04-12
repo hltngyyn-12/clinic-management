@@ -3,6 +3,7 @@ package com.clinic.backend.service;
 import com.clinic.backend.dto.auth.AuthResponse;
 import com.clinic.backend.dto.auth.LoginRequest;
 import com.clinic.backend.dto.auth.RegisterRequest;
+import com.clinic.backend.entity.RefreshToken;
 import com.clinic.backend.entity.Role;
 import com.clinic.backend.entity.User;
 import com.clinic.backend.exception.ApiException;
@@ -11,6 +12,7 @@ import com.clinic.backend.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -19,13 +21,16 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
+                       JwtService jwtService,
+                       RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -53,6 +58,7 @@ public class AuthService {
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole().name(),
+                null,
                 null
         );
     }
@@ -75,7 +81,7 @@ public class AuthService {
             throw new ApiException("Sai tên đăng nhập, email hoặc mật khẩu");
         }
 
-        String token = jwtService.generateToken(
+        String accessToken = jwtService.generateToken(
                 org.springframework.security.core.userdetails.User
                         .withUsername(user.getUsername())
                         .password(user.getPasswordHash())
@@ -83,12 +89,15 @@ public class AuthService {
                         .build()
         );
 
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
         return new AuthResponse(
                 "Đăng nhập thành công",
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole().name(),
-                token
+                accessToken,
+                refreshToken.getToken()
         );
     }
 
@@ -96,6 +105,25 @@ public class AuthService {
         return userRepository.findByUsername(username)
                 .or(() -> userRepository.findByEmail(username))
                 .orElseThrow(() -> new ApiException("Không tìm thấy người dùng"));
+    }
+
+    public Map<String, String> refreshAccessToken(String refreshTokenValue) {
+        if (isBlank(refreshTokenValue)) {
+            throw new ApiException("Refresh token không được để trống");
+        }
+
+        RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(refreshTokenValue);
+        User user = refreshToken.getUser();
+
+        String newAccessToken = jwtService.generateToken(
+                org.springframework.security.core.userdetails.User
+                        .withUsername(user.getUsername())
+                        .password(user.getPasswordHash())
+                        .roles(user.getRole().name())
+                        .build()
+        );
+
+        return Map.of("accessToken", newAccessToken);
     }
 
     private void validateRegisterRequest(RegisterRequest request) {
