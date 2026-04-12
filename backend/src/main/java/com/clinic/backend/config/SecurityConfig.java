@@ -27,9 +27,15 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/api/test", "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/api/test",
+                                "/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/refresh"
+                        ).permitAll()
 
-                        .requestMatchers("/api/medical-record/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers("/api/medical-records/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
