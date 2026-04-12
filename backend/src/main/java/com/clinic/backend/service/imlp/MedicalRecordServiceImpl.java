@@ -38,4 +38,30 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
         return medicalRecordRepository.save(record);
     }
+
+    @Override
+    public MedicalRecord getByIdForCurrentUser(Long recordId, String username, String role) {
+        MedicalRecord record = medicalRecordRepository.findById(recordId)
+                .orElseThrow(() -> new ApiException("Không tìm thấy hồ sơ khám"));
+
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            return record;
+        }
+
+        if ("DOCTOR".equalsIgnoreCase(role)
+                && record.getDoctor() != null
+                && record.getDoctor().getUser() != null
+                && username.equals(record.getDoctor().getUser().getUsername())) {
+            return record;
+        }
+
+        if ("PATIENT".equalsIgnoreCase(role)
+                && record.getPatient() != null
+                && record.getPatient().getUser() != null
+                && username.equals(record.getPatient().getUser().getUsername())) {
+            return record;
+        }
+
+        throw new ApiException("Bạn không có quyền truy cập hồ sơ này");
+    }
 }
