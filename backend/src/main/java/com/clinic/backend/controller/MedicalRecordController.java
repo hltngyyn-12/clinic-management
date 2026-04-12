@@ -4,6 +4,7 @@ import com.clinic.backend.service.MedicalRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -25,6 +26,21 @@ public class MedicalRecordController {
 
         return ResponseEntity.ok(
                 medicalRecordService.create(appointmentId, diagnosis, notes)
+        );
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PATIENT', 'ADMIN')")
+    public ResponseEntity<?> getById(@PathVariable Long id, Authentication authentication) {
+        String username = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority()
+                .replace("ROLE_", "");
+
+        return ResponseEntity.ok(
+                medicalRecordService.getByIdForCurrentUser(id, username, role)
         );
     }
 }
