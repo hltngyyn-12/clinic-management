@@ -49,6 +49,7 @@ function LoginPage() {
 
       // 💾 lưu token
       localStorage.setItem("token", token);
+      localStorage.setItem("token", res.data.token);
 
       // 👤 lấy user info
       const me = await api.get("/api/auth/me");
