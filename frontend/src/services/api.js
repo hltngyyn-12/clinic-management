@@ -1,30 +1,32 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080"
+  baseURL: "http://localhost:8080",
 });
 
-// attach token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+// 👉 AUTO GẮN TOKEN
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
-  return config;
-});
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// handle error + token hết hạn
+// 👉 HANDLE TOKEN EXPIRE
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      alert("Session expired. Please login again.");
+      alert("Session expired. Please login again 😢");
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
-
     return Promise.reject(err);
   }
 );
