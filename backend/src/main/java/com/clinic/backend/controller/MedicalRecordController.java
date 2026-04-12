@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.clinic.backend.dto.medicalrecord.CreateMedicalRecordRequest;
 import jakarta.validation.Valid;
+import com.clinic.backend.dto.common.ApiResponse;
 
 @RestController
 @RequestMapping("/api/medical-records")
@@ -18,10 +19,8 @@ public class MedicalRecordController {
 
     @PostMapping
     @PreAuthorize("hasRole('DOCTOR')")
-    @PostMapping
-    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<?> create(@Valid @RequestBody CreateMedicalRecordRequest req) {
-        
+
         return ResponseEntity.ok(
                 medicalRecordService.create(
                         req.getAppointmentId(),
