@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import com.clinic.backend.dto.medicalrecord.CreateMedicalRecordRequest;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/medical-records")
@@ -18,14 +18,16 @@ public class MedicalRecordController {
 
     @PostMapping
     @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<?> create(@RequestBody Map<String, String> req) {
-
-        Long appointmentId = Long.parseLong(req.get("appointmentId"));
-        String diagnosis = req.get("diagnosis");
-        String notes = req.get("notes");
-
+    @PostMapping
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<?> create(@Valid @RequestBody CreateMedicalRecordRequest req) {
+        
         return ResponseEntity.ok(
-                medicalRecordService.create(appointmentId, diagnosis, notes)
+                medicalRecordService.create(
+                        req.getAppointmentId(),
+                        req.getDiagnosis(),
+                        req.getNotes()
+                )
         );
     }
 
