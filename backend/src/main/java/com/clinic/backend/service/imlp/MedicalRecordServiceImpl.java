@@ -8,7 +8,7 @@ import com.clinic.backend.repository.MedicalRecordRepository;
 import com.clinic.backend.service.MedicalRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.clinic.backend.dto.medicalrecord.MedicalRecordResponse;
 import java.time.LocalDate;
 
 @Service
@@ -19,7 +19,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final AppointmentRepository appointmentRepository;
 
     @Override
-    public MedicalRecord create(Long appointmentId, String diagnosis, String notes) {
+    public MedicalRecordResponse create(Long appointmentId, String diagnosis, String notes) {
 
         Appointment ap = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ApiException("Không tìm thấy lịch hẹn"));
@@ -36,32 +36,50 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         record.setNotes(notes);
         record.setCreatedAt(LocalDate.now());
 
-        return medicalRecordRepository.save(record);
+        MedicalRecord saved = medicalRecordRepository.save(record);
+        return toResponse(saved);
     }
 
     @Override
-    public MedicalRecord getByIdForCurrentUser(Long recordId, String username, String role) {
+    public MedicalRecordResponse getByIdForCurrentUser(Long recordId, String username, String role) {
         MedicalRecord record = medicalRecordRepository.findById(recordId)
                 .orElseThrow(() -> new ApiException("Không tìm thấy hồ sơ khám"));
 
         if ("ADMIN".equalsIgnoreCase(role)) {
-            return record;
+            return toResponse(record);
         }
 
         if ("DOCTOR".equalsIgnoreCase(role)
                 && record.getDoctor() != null
                 && record.getDoctor().getUser() != null
                 && username.equals(record.getDoctor().getUser().getUsername())) {
-            return record;
+            return toResponse(record);
         }
 
         if ("PATIENT".equalsIgnoreCase(role)
                 && record.getPatient() != null
                 && record.getPatient().getUser() != null
                 && username.equals(record.getPatient().getUser().getUsername())) {
-            return record;
+            return toResponse(record);
         }
 
         throw new ApiException("Bạn không có quyền truy cập hồ sơ này");
+    }
+    private MedicalRecordResponse toResponse(MedicalRecord record) {
+    MedicalRecordResponse res = new MedicalRecordResponse();
+
+    res.setId(record.getId());
+    res.setDiagnosis(record.getDiagnosis());
+    res.setNotes(record.getNotes());
+
+    if (record.getDoctor() != null) {
+        res.setDoctorName(record.getDoctor().getName());
+    }
+
+    if (record.getPatient() != null) {
+        res.setPatientName(record.getPatient().getName());
+    }
+
+    return res;
     }
 }

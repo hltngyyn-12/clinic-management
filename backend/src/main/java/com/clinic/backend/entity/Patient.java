@@ -46,4 +46,9 @@ public class Patient {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public String getName() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getName'");
+    }
 }
