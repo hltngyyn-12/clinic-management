@@ -21,13 +21,15 @@ public class MedicalRecordController {
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<?> create(@Valid @RequestBody CreateMedicalRecordRequest req) {
 
-        return ResponseEntity.ok(
-                medicalRecordService.create(
-                        req.getAppointmentId(),
-                        req.getDiagnosis(),
-                        req.getNotes()
-                )
+        var data = medicalRecordService.create(
+        req.getAppointmentId(),
+        req.getDiagnosis(),
+        req.getNotes()
         );
+
+        return ResponseEntity.ok(
+        new ApiResponse<>(true, "Tạo hồ sơ thành công", data)
+);
     }
 
     @GetMapping("/{id}")
@@ -40,8 +42,10 @@ public class MedicalRecordController {
                 .getAuthority()
                 .replace("ROLE_", "");
 
+        var data = medicalRecordService.getByIdForCurrentUser(id, username, role);
+
         return ResponseEntity.ok(
-                medicalRecordService.getByIdForCurrentUser(id, username, role)
+                new ApiResponse<>(true, "Lấy hồ sơ thành công", data)
         );
     }
 }
