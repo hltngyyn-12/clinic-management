@@ -1,23 +1,60 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
-
-// NEW pages 29.03
 import DoctorListPage from "../pages/DoctorListPage";
 import BookingPage from "../pages/BookingPage";
 import MyAppointmentsPage from "../pages/MyAppointmentsPage";
 import MedicalRecordPage from "../pages/MedicalRecordPage";
-
-//12.04
 import CreateMedicalRecordPage from "../pages/CreateMedicalRecordPage";
 
-// dashboard tạm
 function PatientPage() {
   return <h2>Patient Dashboard</h2>;
+}
+
+function getRoleFromStorage() {
+  try {
+    const rawUser = localStorage.getItem("user");
+    const savedRole = localStorage.getItem("role");
+
+    if (!rawUser && savedRole) return savedRole.toUpperCase();
+
+    const user = rawUser ? JSON.parse(rawUser) : null;
+
+    const role =
+      user?.role ||
+      user?.roles?.[0] ||
+      user?.authorities?.[0]?.replace("ROLE_", "") ||
+      savedRole;
+
+    return role ? String(role).toUpperCase() : null;
+  } catch (error) {
+    console.error("Không đọc được role từ localStorage:", error);
+    return null;
+  }
+}
+
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
+}
+
+function RoleRoute({ children, allow }) {
+  const token = localStorage.getItem("token");
+  const role = getRoleFromStorage();
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!role || !allow.includes(role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
 
 function AppRoutes() {
@@ -25,25 +62,72 @@ function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<MainLayout />}>
-
-          {/* PUBLIC */}
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
 
-          {/* DASHBOARD */}
-          <Route path="dashboard" element={<DashboardLayout />} />
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* PATIENT */}
-          <Route path="patient" element={<PatientPage />} />
-          <Route path="medical-records" element={<MedicalRecordPage />} />
-          <Route path="doctor/create-record" element={<CreateMedicalRecordPage />} />
+          <Route
+            path="patient"
+            element={
+              <RoleRoute allow={["PATIENT"]}>
+                <PatientPage />
+              </RoleRoute>
+            }
+          />
 
-          {/* BOOKING FLOW */}
-          <Route path="doctors" element={<DoctorListPage />} />
-          <Route path="booking/:doctorId" element={<BookingPage />} />
-          <Route path="appointments" element={<MyAppointmentsPage />} />
+          <Route
+            path="medical-records"
+            element={
+              <RoleRoute allow={["DOCTOR", "PATIENT", "ADMIN"]}>
+                <MedicalRecordPage />
+              </RoleRoute>
+            }
+          />
 
+          <Route
+            path="doctor/create-record"
+            element={
+              <RoleRoute allow={["DOCTOR"]}>
+                <CreateMedicalRecordPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="doctors"
+            element={
+              <ProtectedRoute>
+                <DoctorListPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="booking/:doctorId"
+            element={
+              <RoleRoute allow={["PATIENT"]}>
+                <BookingPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="appointments"
+            element={
+              <RoleRoute allow={["PATIENT"]}>
+                <MyAppointmentsPage />
+              </RoleRoute>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

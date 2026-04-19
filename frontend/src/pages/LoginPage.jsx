@@ -1,182 +1,148 @@
 import { useState, useContext } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { getErrorMessage } from "../services/api";
 
 function LoginPage() {
   const [form, setForm] = useState({
     usernameOrEmail: "",
-    password: ""
+    password: "",
   });
-
   const [loading, setLoading] = useState(false);
 
   const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const normalizeRole = (user) => {
+    if (!user) return null;
+
+    if (typeof user.role === "string" && user.role.trim()) {
+      return user.role.trim().toUpperCase();
+    }
+
+    if (Array.isArray(user.roles) && user.roles.length > 0) {
+      return String(user.roles[0]).replace("ROLE_", "").toUpperCase();
+    }
+
+    if (Array.isArray(user.authorities) && user.authorities.length > 0) {
+      return String(user.authorities[0]).replace("ROLE_", "").toUpperCase();
+    }
+
+    return null;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.usernameOrEmail || !form.password) {
-      alert("Please fill all fields");
+    if (!form.usernameOrEmail.trim() || !form.password.trim()) {
+      alert("Vui lòng nhập đầy đủ tài khoản và mật khẩu.");
       return;
     }
 
     try {
       setLoading(true);
 
-      // 🔥 DEBUG xem dữ liệu gửi đi
-      console.log("FORM:", form);
-
-      // 🔐 LOGIN (trim sạch data)
       const loginRes = await axios.post(
         "http://localhost:8080/api/auth/login",
         {
           usernameOrEmail: form.usernameOrEmail.trim(),
-          password: form.password.trim()
-        }
+          password: form.password.trim(),
+        },
       );
 
-      const token = loginRes.data.token;
+      const loginData = loginRes.data?.data || loginRes.data;
+      const token = loginData?.token;
 
       if (!token) {
-        alert("No token received ❌");
+        alert("Không nhận được token từ hệ thống.");
         return;
       }
 
-      // 💾 lưu token
       localStorage.setItem("token", token);
 
-      // 👤 CALL /me (gắn header trực tiếp → tránh 403)
-      const meRes = await axios.get(
-        "http://localhost:8080/api/auth/me",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const meRes = await axios.get("http://localhost:8080/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      const user = meRes.data;
+      const meData = meRes.data?.data || meRes.data;
+      const role = normalizeRole(meData);
 
-      // 💾 lưu role
-      localStorage.setItem("role", user.role);
+      const normalizedUser = {
+        ...meData,
+        role,
+      };
 
-      // 💾 lưu user vào context
-      setUser(user);
-      localStorage.setItem("user", JSON.stringify(user));
-      console.log("USER:", user);
-
-      alert("Login success 🎉");
-
-      // 🚀 redirect theo role
-      if (user.role === "ADMIN") {
-        navigate("/admin");
-      } else if (user.role === "DOCTOR") {
-        navigate("/doctor");
-      } else {
-        navigate("/"); // 👈 về HomePage
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
+      if (role) {
+        localStorage.setItem("role", role);
       }
 
-    } catch (err) {
-      console.error("LOGIN ERROR:", err.response?.data || err);
+      setUser(normalizedUser);
 
-      alert(
-        err.response?.data?.message ||
-        "Login failed ❌"
-      );
+      alert("Đăng nhập thành công.");
+
+      if (role === "DOCTOR") {
+        navigate("/doctor/create-record");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("LOGIN ERROR:", err?.response?.data || err);
+      alert(getErrorMessage(err, "Đăng nhập thất bại."));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea, #764ba2)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center"
-      }}
-    >
-      <div
-        style={{
-          width: "400px",
-          background: "rgba(255,255,255,0.95)",
-          backdropFilter: "blur(10px)",
-          padding: "30px",
-          borderRadius: "16px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
-        }}
-      >
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
-          🏥 Clinic Login
-        </h2>
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>Clinic Login</h2>
+        <p style={styles.subtitle}>Đăng nhập để tiếp tục sử dụng hệ thống.</p>
 
         <form onSubmit={handleSubmit}>
-
-          <div className="mb-3">
-            <label>Username or Email</label>
+          <div style={styles.field}>
+            <label style={styles.label}>Username or Email</label>
             <input
               type="text"
               name="usernameOrEmail"
-              className="form-control"
               value={form.usernameOrEmail}
               onChange={handleChange}
-              placeholder="Enter your username..."
+              placeholder="Nhập username hoặc email"
+              style={styles.input}
             />
           </div>
 
-          <div className="mb-3">
-            <label>Password</label>
+          <div style={styles.field}>
+            <label style={styles.label}>Password</label>
             <input
               type="password"
               name="password"
-              className="form-control"
               value={form.password}
               onChange={handleChange}
-              placeholder="Enter your password..."
+              placeholder="Nhập mật khẩu"
+              style={styles.input}
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "12px",
-              borderRadius: "10px",
-              border: "none",
-              background: "#667eea",
-              color: "#fff",
-              fontWeight: "bold",
-              transition: "0.3s",
-              cursor: "pointer"
-            }}
-          >
-            {loading ? "Logging in..." : "Login"}
+          <button type="submit" disabled={loading} style={styles.button}>
+            {loading ? "Đang đăng nhập..." : "Login"}
           </button>
-
         </form>
 
-        <p style={{ textAlign: "center", marginTop: "15px" }}>
-          Don't have an account?{" "}
-          <span
-            style={{
-              color: "#667eea",
-              cursor: "pointer",
-              fontWeight: "bold"
-            }}
-            onClick={() => navigate("/register")}
-          >
+        <p style={styles.footerText}>
+          Chưa có tài khoản?{" "}
+          <span style={styles.linkText} onClick={() => navigate("/register")}>
             Register
           </span>
         </p>
@@ -186,3 +152,71 @@ function LoginPage() {
 }
 
 export default LoginPage;
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #667eea, #764ba2)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "24px",
+  },
+  card: {
+    width: "100%",
+    maxWidth: "420px",
+    background: "rgba(255,255,255,0.96)",
+    padding: "30px",
+    borderRadius: "18px",
+    boxShadow: "0 12px 32px rgba(0,0,0,0.22)",
+  },
+  title: {
+    textAlign: "center",
+    marginTop: 0,
+    marginBottom: "8px",
+  },
+  subtitle: {
+    textAlign: "center",
+    color: "#666",
+    marginTop: 0,
+    marginBottom: "24px",
+  },
+  field: {
+    marginBottom: "16px",
+  },
+  label: {
+    display: "block",
+    marginBottom: "8px",
+    fontWeight: 600,
+  },
+  input: {
+    width: "100%",
+    padding: "12px 14px",
+    borderRadius: "10px",
+    border: "1px solid #d0d7e2",
+    fontSize: "14px",
+    outline: "none",
+    boxSizing: "border-box",
+  },
+  button: {
+    width: "100%",
+    padding: "12px",
+    borderRadius: "10px",
+    border: "none",
+    background: "#667eea",
+    color: "#fff",
+    fontWeight: 700,
+    cursor: "pointer",
+    marginTop: "6px",
+  },
+  footerText: {
+    textAlign: "center",
+    marginTop: "18px",
+    marginBottom: 0,
+  },
+  linkText: {
+    color: "#667eea",
+    cursor: "pointer",
+    fontWeight: 700,
+  },
+};

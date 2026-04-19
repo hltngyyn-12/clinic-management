@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: "http://localhost:8080",
 });
 
-// 👉 AUTO GẮN TOKEN
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -15,20 +14,32 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
-// 👉 HANDLE TOKEN EXPIRE
 api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
-      alert("Session expired. Please login again 😢");
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
       window.location.href = "/login";
     }
-    return Promise.reject(err);
-  }
+
+    return Promise.reject(error);
+  },
 );
+
+export const getErrorMessage = (error, fallback = "Có lỗi xảy ra") => {
+  return (
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.response?.data?.data?.message ||
+    error?.message ||
+    fallback
+  );
+};
 
 export default api;
