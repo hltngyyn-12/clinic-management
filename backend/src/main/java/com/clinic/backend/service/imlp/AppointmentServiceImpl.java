@@ -1,6 +1,5 @@
 package com.clinic.backend.service.imlp;
 
-import com.clinic.backend.controller.AppointmentService;
 import com.clinic.backend.entity.Appointment;
 import com.clinic.backend.entity.Doctor;
 import com.clinic.backend.entity.Patient;
@@ -8,6 +7,8 @@ import com.clinic.backend.exception.ApiException;
 import com.clinic.backend.repository.AppointmentRepository;
 import com.clinic.backend.repository.DoctorRepository;
 import com.clinic.backend.repository.PatientRepository;
+import com.clinic.backend.service.AppointmentService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

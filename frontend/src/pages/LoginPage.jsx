@@ -2,10 +2,8 @@ import { useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import api from "../services/api";
 
 function LoginPage() {
-
   const [form, setForm] = useState({
     usernameOrEmail: "",
     password: ""
@@ -34,13 +32,19 @@ function LoginPage() {
     try {
       setLoading(true);
 
-      // 🔐 login lấy token
-      const res = await axios.post(
+      // 🔥 DEBUG xem dữ liệu gửi đi
+      console.log("FORM:", form);
+
+      // 🔐 LOGIN (trim sạch data)
+      const loginRes = await axios.post(
         "http://localhost:8080/api/auth/login",
-        form
+        {
+          usernameOrEmail: form.usernameOrEmail.trim(),
+          password: form.password.trim()
+        }
       );
 
-      const token = res.data.token;
+      const token = loginRes.data.token;
 
       if (!token) {
         alert("No token received ❌");
@@ -49,28 +53,45 @@ function LoginPage() {
 
       // 💾 lưu token
       localStorage.setItem("token", token);
-      localStorage.setItem("token", res.data.token);
 
-      // 👤 lấy user info
-      const me = await api.get("/api/auth/me");
+      // 👤 CALL /me (gắn header trực tiếp → tránh 403)
+      const meRes = await axios.get(
+        "http://localhost:8080/api/auth/me",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
 
-      setUser(me.data);
+      const user = meRes.data;
 
-      // 🎉 success
+      // 💾 lưu role
+      localStorage.setItem("role", user.role);
+
+      // 💾 lưu user vào context
+      setUser(user);
+      localStorage.setItem("user", JSON.stringify(user));
+      console.log("USER:", user);
+
       alert("Login success 🎉");
 
-      // 🚀 redirect
-      if (me.data.role === "ADMIN") {
+      // 🚀 redirect theo role
+      if (user.role === "ADMIN") {
         navigate("/admin");
-      } else if (me.data.role === "DOCTOR") {
+      } else if (user.role === "DOCTOR") {
         navigate("/doctor");
       } else {
-        navigate("/doctors"); // booking flow
+        navigate("/"); // 👈 về HomePage
       }
 
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Login failed ❌");
+      console.error("LOGIN ERROR:", err.response?.data || err);
+
+      alert(
+        err.response?.data?.message ||
+        "Login failed ❌"
+      );
     } finally {
       setLoading(false);
     }
@@ -140,8 +161,6 @@ function LoginPage() {
               transition: "0.3s",
               cursor: "pointer"
             }}
-            onMouseOver={(e) => (e.target.style.background = "#5a67d8")}
-            onMouseOut={(e) => (e.target.style.background = "#667eea")}
           >
             {loading ? "Logging in..." : "Login"}
           </button>

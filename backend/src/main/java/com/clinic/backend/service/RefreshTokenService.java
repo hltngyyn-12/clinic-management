@@ -5,6 +5,7 @@ import com.clinic.backend.entity.User;
 import com.clinic.backend.exception.ApiException;
 import com.clinic.backend.repository.RefreshTokenRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,7 +18,7 @@ public class RefreshTokenService {
     public RefreshTokenService(RefreshTokenRepository refreshTokenRepository) {
         this.refreshTokenRepository = refreshTokenRepository;
     }
-
+    @Transactional
     public RefreshToken createRefreshToken(User user) {
         refreshTokenRepository.deleteByUser(user);
 
@@ -27,6 +28,11 @@ public class RefreshTokenService {
         refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
 
         return refreshTokenRepository.save(refreshToken);
+    }
+
+    @Transactional
+    public void deleteByUser(User user) {
+        refreshTokenRepository.deleteByUser(user);
     }
 
     public RefreshToken verifyRefreshToken(String token) {

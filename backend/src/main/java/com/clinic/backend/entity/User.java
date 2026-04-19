@@ -3,6 +3,8 @@ package com.clinic.backend.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -30,10 +32,12 @@ public class User {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToOne(mappedBy = "user")
     private Doctor doctor;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToOne(mappedBy = "user")
     private Patient patient;
     
     public User() {

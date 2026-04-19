@@ -1,154 +1,79 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 function MainLayout() {
+  const { user, setUser } = useContext(AuthContext);
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.clear();
+    setUser(null);
     navigate("/login");
   };
 
   return (
-    <>
+    <div style={{ minHeight: "100vh", background: "#f6f8fc" }}>
       {/* NAVBAR */}
-      <nav
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 1000,
-          backdropFilter: "blur(10px)",
-          background: "rgba(255,255,255,0.8)",
-          padding: "12px 40px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderBottom: "1px solid #eee"
-        }}
-      >
-        {/* LOGO */}
+      <div style={{
+        height: "70px",
+        background: "#fff",
+        borderBottom: "1px solid #e5e7eb",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 40px"
+      }}>
         <div
           onClick={() => navigate("/")}
-          style={{
-            fontWeight: "bold",
-            fontSize: "22px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
-          }}
+          style={{ fontSize: "20px", fontWeight: "bold", cursor: "pointer" }}
         >
-          🏥 <span style={{ color: "#667eea" }}>ClinicMS</span>
+          🏥 ClinicMS
         </div>
 
-        {/* MENU */}
-        <div style={{ display: "flex", gap: "25px" }}>
-          <Link
-            to="/"
-            style={{
-              textDecoration: "none",
-              color: "#333",
-              fontWeight: "500"
-            }}
-          >
-            Home
-          </Link>
+        {user && (
+          <div style={{ display: "flex", gap: "25px" }}>
+            <NavLink to="/">Home</NavLink>
+            <NavLink to="/doctors">Doctors</NavLink>
+            <NavLink to="/appointments">Appointments</NavLink>
+            <NavLink to="/medical-records">Records</NavLink>
+          </div>
+        )}
 
-          <Link to="/medical-records">Medical Records</Link>
-
-          {user && (
-            <Link
-              to="/appointments"
-              style={{
-                textDecoration: "none",
-                color: "#333",
-                fontWeight: "500"
-              }}
-            >
-              Appointments
-            </Link>
-          )}
-        </div>
-
-        {/* RIGHT */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {!user ? (
             <>
-              <button
-                onClick={() => navigate("/login")}
-                style={{
-                  padding: "6px 15px",
-                  borderRadius: "8px",
-                  border: "1px solid #667eea",
-                  background: "transparent",
-                  color: "#667eea",
-                  cursor: "pointer"
-                }}
-              >
-                Login
-              </button>
-
-              <button
-                onClick={() => navigate("/register")}
-                style={{
-                  padding: "6px 15px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: "#667eea",
-                  color: "#fff",
-                  cursor: "pointer"
-                }}
-              >
-                Register
-              </button>
+              <button onClick={() => navigate("/login")}>Login</button>
+              <button onClick={() => navigate("/register")}>Register</button>
             </>
           ) : (
             <>
-              {/* Avatar giả */}
-              <div
-                style={{
-                  width: "35px",
-                  height: "35px",
-                  borderRadius: "50%",
-                  background: "#667eea",
-                  color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: "bold"
-                }}
-              >
+              <div style={{
+                width: 35,
+                height: 35,
+                borderRadius: "50%",
+                background: "#6366f1",
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}>
                 {user.username?.charAt(0).toUpperCase()}
               </div>
 
-              <span style={{ fontWeight: "500" }}>
-                {user.username}
-              </span>
+              <span>{user.username}</span>
 
-              <button
-                onClick={handleLogout}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: "#ff4d4f",
-                  color: "#fff",
-                  cursor: "pointer"
-                }}
-              >
-                Logout
-              </button>
+              <button onClick={handleLogout}>Logout</button>
             </>
           )}
         </div>
-      </nav>
+      </div>
 
       {/* CONTENT */}
-      <div>
+      <div style={{ padding: "30px" }}>
         <Outlet />
       </div>
-    </>
+    </div>
   );
 }
 

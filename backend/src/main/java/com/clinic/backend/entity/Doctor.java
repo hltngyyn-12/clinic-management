@@ -1,9 +1,10 @@
 package com.clinic.backend.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "doctor")
+@Table(name = "doctors")
 public class Doctor {
 
     @Id
@@ -15,6 +16,7 @@ public class Doctor {
 
     @OneToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore // 🔥 FIX Ở ĐÂY
     private User user;
 
     public Long getId() {
