@@ -1,27 +1,67 @@
-# API Documentation
+# Clinic Management System - API Documentation
 
-## Base URL
-`http://localhost:8080`
+---
 
-## Authentication
-Tất cả API nghiệp vụ dùng JWT Bearer Token, trừ:
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/refresh`
-- `GET /`
-- `GET /api/test`
+## 1. Base URL
 
-Header mẫu:
-```http
-Authorization: Bearer <jwt-token>
+```
+http://localhost:8080
 ```
 
-## 1. Authentication
+---
+
+## 2. Authentication
+
+All business APIs require JWT Bearer Token, except:
+
+* POST /api/auth/register
+* POST /api/auth/login
+* POST /api/auth/refresh
+* GET /
+* GET /api/test
+
+Request header format:
+
+```
+Authorization: Bearer <access_token>
+```
+
+---
+
+## 3. Standard Response Format
+
+Most APIs return a unified response structure:
+
+```json
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": {}
+}
+```
+
+---
+
+## 4. HTTP Status Codes
+
+| Code | Description           |
+| ---- | --------------------- |
+| 200  | Success               |
+| 400  | Bad Request           |
+| 401  | Unauthorized          |
+| 403  | Forbidden             |
+| 500  | Internal Server Error |
+
+---
+
+## 5. Authentication APIs
 
 ### POST /api/auth/register
-Đăng ký tài khoản.
 
-Request body:
+Register a new user.
+
+Request:
+
 ```json
 {
   "username": "patient01",
@@ -32,70 +72,193 @@ Request body:
 }
 ```
 
+---
+
 ### POST /api/auth/login
-Đăng nhập bằng `usernameOrEmail` và `password`.
+
+Authenticate user credentials.
+
+Request:
+
+```json
+{
+  "usernameOrEmail": "doctor1",
+  "password": "123456"
+}
+```
+
+Response:
+
+```json
+{
+  "accessToken": "jwt_token",
+  "refreshToken": "refresh_token",
+  "role": "DOCTOR"
+}
+```
+
+---
 
 ### POST /api/auth/refresh
-Lấy access token mới từ refresh token.
+
+Request:
+
+```json
+{
+  "refreshToken": "your_refresh_token"
+}
+```
+
+---
 
 ### GET /api/auth/me
-Lấy thông tin user hiện tại.
 
-## 2. Common / Utility
+Headers:
+
+```
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "userId": 1,
+  "username": "doctor1",
+  "email": "doctor@gmail.com",
+  "role": "DOCTOR"
+}
+```
+
+---
+
+## 6. Common APIs
 
 ### GET /
-Health check đơn giản.
+
+Health check endpoint.
 
 ### GET /api/test
-Test endpoint.
+
+Simple test endpoint.
+
+---
 
 ### GET /api/doctors
-Danh sách bác sĩ cho patient booking.
+
+Retrieve list of doctors.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Lấy danh sách bác sĩ thành công",
+  "data": []
+}
+```
+
+---
 
 ### GET /api/doctors/{id}/slots?date=yyyy-MM-dd
-Lấy slot trống của bác sĩ theo ngày.
+
+Retrieve available slots for a doctor.
+
+---
 
 ### GET /api/doctors/{id}/reviews
-Lấy review của bác sĩ.
 
-## 3. Patient APIs
+Retrieve doctor reviews.
+
+---
+
+## 7. Patient APIs
+
 Base path: `/api/patient`
 
+---
+
 ### GET /api/patient/doctors
-Lấy danh sách bác sĩ khả dụng cho patient portal.
+
+Headers:
+
+```
+Authorization: Bearer <token>
+```
+
+---
 
 ### POST /api/patient/appointments
-Đặt lịch khám.
 
-Request body:
+Headers:
+
+```
+Authorization: Bearer <token>
+```
+
+Request:
+
 ```json
 {
   "doctorId": 1,
   "date": "2026-04-30",
-  "time": "09:00",
+  "slotTime": "09:00",
   "reason": "General checkup"
 }
 ```
 
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Đặt lịch khám thành công",
+  "data": {
+    "appointmentId": 1
+  }
+}
+```
+
+---
+
 ### PUT /api/patient/appointments/{appointmentId}/deposit
-Thanh toán đặt cọc cho appointment.
+
+Headers:
+
+```
+Authorization: Bearer <token>
+```
+
+Request:
+
+```json
+{
+  "amount": 100
+}
+```
+
+---
 
 ### GET /api/patient/appointments
-Lấy lịch hẹn của patient hiện tại.
 
 ### GET /api/patient/medical-history
-Lấy lịch sử khám bệnh.
 
 ### GET /api/patient/prescriptions
-Lấy đơn thuốc của patient hiện tại.
 
 ### GET /api/patient/test-results
-Lấy kết quả xét nghiệm của patient hiện tại.
+
+---
 
 ### POST /api/patient/reviews
-Tạo đánh giá bác sĩ sau khám.
 
-Request body:
+Headers:
+
+```
+Authorization: Bearer <token>
+```
+
+Request:
+
 ```json
 {
   "appointmentId": 1,
@@ -104,49 +267,79 @@ Request body:
 }
 ```
 
-### GET /api/patient/reviews
-Lấy các review patient đã gửi.
+---
 
-## 4. Doctor APIs
+### GET /api/patient/reviews
+
+---
+
+## 8. Doctor APIs
+
 Base path: `/api/doctor`
 
+---
+
 ### GET /api/doctor/appointments/today
-Lấy lịch khám trong ngày của bác sĩ hiện tại.
+
+Headers:
+
+```
+Authorization: Bearer <token>
+```
+
+---
 
 ### POST /api/doctor/medical-records
-Tạo hồ sơ khám bệnh từ một appointment.
 
-Request body:
+Headers:
+
+```
+Authorization: Bearer <token>
+```
+
+Request:
+
 ```json
 {
   "appointmentId": 1,
   "diagnosis": "Common cold",
-  "symptoms": "Fever, cough",
-  "notes": "Patient should rest",
-  "followUpDate": "2026-05-03"
+  "notes": "Patient should rest"
 }
 ```
 
-### POST /api/doctor/prescriptions
-Tạo đơn thuốc cho medical record.
+---
 
-Request body:
+### POST /api/doctor/prescriptions
+
+Headers:
+
+```
+Authorization: Bearer <token>
+```
+
+Request:
+
 ```json
 {
   "medicalRecordId": 1,
   "medicineId": 1,
-  "medicineName": "Cetirizine 10mg",
-  "dosage": "1 tablet",
-  "frequency": "2 times/day",
-  "duration": "5 days",
-  "instructions": "After meals"
+  "dosage": "2 times/day",
+  "duration": "5 days"
 }
 ```
 
-### POST /api/doctor/test-requests
-Tạo yêu cầu xét nghiệm cho medical record.
+---
 
-Request body:
+### POST /api/doctor/test-requests
+
+Headers:
+
+```
+Authorization: Bearer <token>
+```
+
+Request:
+
 ```json
 {
   "medicalRecordId": 1,
@@ -154,77 +347,115 @@ Request body:
 }
 ```
 
+---
+
 ### GET /api/doctor/patients/{patientId}/history
-Xem lịch sử bệnh nhân.
 
 ### GET /api/doctor/profile
-Lấy hồ sơ bác sĩ hiện tại.
 
 ### PUT /api/doctor/profile
-Cập nhật hồ sơ bác sĩ hiện tại.
 
 ### GET /api/doctor/medicines
-Lấy danh sách thuốc để bác sĩ kê đơn.
 
-## 5. Admin APIs
+---
+
+## 9. Admin APIs
+
 Base path: `/api/admin`
 
+---
+
 ### Doctor Management
-- `GET /api/admin/doctors`
-- `GET /api/admin/doctors/{doctorId}`
-- `POST /api/admin/doctors`
-- `PUT /api/admin/doctors/{doctorId}`
-- `DELETE /api/admin/doctors/{doctorId}`
+
+* GET /api/admin/doctors
+* GET /api/admin/doctors/{doctorId}
+* POST /api/admin/doctors
+* PUT /api/admin/doctors/{doctorId}
+* DELETE /api/admin/doctors/{doctorId}
+
+---
 
 ### Specialty Management
-- `GET /api/admin/specialties`
-- `POST /api/admin/specialties`
-- `PUT /api/admin/specialties/{specialtyId}`
-- `DELETE /api/admin/specialties/{specialtyId}`
+
+* GET /api/admin/specialties
+* POST /api/admin/specialties
+* PUT /api/admin/specialties/{specialtyId}
+* DELETE /api/admin/specialties/{specialtyId}
+
+---
 
 ### Medicine Management
-- `GET /api/admin/medicines`
-- `POST /api/admin/medicines`
-- `PUT /api/admin/medicines/{medicineId}`
-- `DELETE /api/admin/medicines/{medicineId}`
+
+* GET /api/admin/medicines
+* POST /api/admin/medicines
+* PUT /api/admin/medicines/{medicineId}
+* DELETE /api/admin/medicines/{medicineId}
+
+---
 
 ### Slot Configuration
-- `GET /api/admin/slot-configs`
-- `POST /api/admin/slot-configs`
-- `PUT /api/admin/slot-configs/{slotConfigId}`
-- `DELETE /api/admin/slot-configs/{slotConfigId}`
+
+* GET /api/admin/slot-configs
+* POST /api/admin/slot-configs
+* PUT /api/admin/slot-configs/{slotConfigId}
+* DELETE /api/admin/slot-configs/{slotConfigId}
+
+---
 
 ### Revenue Report
-### GET /api/admin/reports/revenue?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd
-Lấy báo cáo doanh thu theo khoảng ngày.
+
+GET /api/admin/reports/revenue?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd
+
+---
 
 ### Notification Management
-- `GET /api/admin/notifications`
-- `POST /api/admin/notifications`
-- `PUT /api/admin/notifications/{notificationId}`
-- `DELETE /api/admin/notifications/{notificationId}`
 
-## 6. Legacy / Supporting Endpoints
-Project hiện vẫn còn một số endpoint hỗ trợ hoặc cũ:
+* GET /api/admin/notifications
+* POST /api/admin/notifications
+* PUT /api/admin/notifications/{notificationId}
+* DELETE /api/admin/notifications/{notificationId}
 
-- `GET /api/appointments/me`
-- `POST /api/medical-records`
-- `GET /api/medical-records/{id}`
-- `POST /api/prescriptions`
-- `GET /api/prescriptions`
-- `POST /api/tests`
-- `GET /api/tests`
-- `GET /api/doctors/test`
+---
 
-Các endpoint này vẫn tồn tại trong source hiện tại, nhưng UI chính đang ưu tiên dùng các portal API theo role: `/api/patient`, `/api/doctor`, `/api/admin`.
+## 10. Legacy Endpoints
 
-## 7. Response Format
-Đa số endpoint trả theo wrapper:
+The following endpoints are still available but are no longer used by the main application:
 
-```json
-{
-  "success": true,
-  "message": "Operation successful",
-  "data": {}
-}
-```
+* /api/appointments/me
+* /api/medical-records
+* /api/prescriptions
+* /api/tests
+
+These endpoints are maintained for backward compatibility and may be removed in future versions.
+
+---
+
+## 11. Demo Flow
+
+### Patient
+
+1. Login
+2. Retrieve doctors
+3. Book appointment
+4. Make deposit
+
+### Doctor
+
+1. Login
+2. View appointments
+3. Create medical record
+4. Create prescription
+
+### Admin
+
+1. Login
+2. Manage doctors
+3. View revenue report
+
+---
+
+## 12. Notes
+
+* All APIs return JSON format
+* Ensure correct role is used for each endpoint
+* Use Postman or frontend client for testing
