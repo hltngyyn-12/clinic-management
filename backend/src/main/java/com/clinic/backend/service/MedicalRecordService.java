@@ -1,10 +1,10 @@
 package com.clinic.backend.service;
 
-import com.clinic.backend.entity.MedicalRecord;
+import com.clinic.backend.dto.medicalrecord.MedicalRecordResponse;
 
 public interface MedicalRecordService {
 
-    MedicalRecord create(Long appointmentId, String diagnosis, String notes);
+    MedicalRecordResponse create(Long appointmentId, String diagnosis, String notes);
 
-    MedicalRecord getByIdForCurrentUser(Long recordId, String username, String role);
+    MedicalRecordResponse getByIdForCurrentUser(Long recordId, String username, String role);
 }

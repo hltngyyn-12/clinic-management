@@ -1,5 +1,5 @@
 
-package com.clinic.backend.service.impl;
+package com.clinic.backend.service.imlp;
 
 import com.clinic.backend.dto.prescription.CreatePrescriptionRequest;
 import com.clinic.backend.entity.MedicalRecord;
