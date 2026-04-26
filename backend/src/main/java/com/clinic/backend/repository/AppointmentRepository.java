@@ -19,4 +19,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             LocalDate appointmentDate,
             LocalTime slotTime
     );
+
 }

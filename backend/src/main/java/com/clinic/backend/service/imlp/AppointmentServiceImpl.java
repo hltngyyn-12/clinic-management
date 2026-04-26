@@ -92,4 +92,32 @@ public class AppointmentServiceImpl implements AppointmentService {
         ap.setStatus("CANCELLED");
         appointmentRepository.save(ap);
     }
+    // 🔥 THÊM VÀO CUỐI FILE
+
+public Appointment createByUsername(String username, Long doctorId, LocalDate date, LocalTime time, String reason) {
+
+    Patient patient = patientRepository.findByUserUsername(username)
+            .orElseThrow(() -> new ApiException("Không tìm thấy bệnh nhân"));
+
+    Doctor doctor = doctorRepository.findById(doctorId)
+            .orElseThrow(() -> new ApiException("Không tìm thấy bác sĩ"));
+
+    boolean exists = appointmentRepository
+            .existsByDoctorIdAndAppointmentDateAndSlotTime(doctorId, date, time);
+
+    if (exists) {
+        throw new ApiException("Bác sĩ đã có lịch");
+    }
+
+    Appointment ap = new Appointment();
+    ap.setPatient(patient);
+    ap.setDoctor(doctor);
+    ap.setAppointmentDate(date);
+    ap.setSlotTime(time);
+    ap.setReason(reason);
+    ap.setStatus("BOOKED");
+
+    return appointmentRepository.save(ap);
 }
+}
+

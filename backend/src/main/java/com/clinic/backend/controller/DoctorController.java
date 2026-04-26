@@ -1,6 +1,5 @@
 package com.clinic.backend.controller;
 
-import com.clinic.backend.entity.Doctor;
 import com.clinic.backend.repository.DoctorRepository;
 import org.springframework.web.bind.annotation.*;
 
