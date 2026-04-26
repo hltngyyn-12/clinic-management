@@ -1,6 +1,7 @@
 # Clinic Management System
 
 ## Mô tả
+
 Clinic Management System là hệ thống quản lý phòng khám với 3 vai trò chính: `PATIENT`, `DOCTOR`, `ADMIN`.
 
 - `PATIENT` có thể đặt lịch khám online, thanh toán đặt cọc, xem lịch sử khám, xem đơn thuốc, xem kết quả xét nghiệm và đánh giá bác sĩ.
@@ -8,13 +9,15 @@ Clinic Management System là hệ thống quản lý phòng khám với 3 vai tr
 - `ADMIN` có thể quản lý bác sĩ, danh mục chuyên khoa, danh mục thuốc, cấu hình slot khám, báo cáo doanh thu và quản lý thông báo.
 
 ## Thành viên nhóm
-| MSSV | Họ tên | Vai trò |
-|------|--------|---------|
-| TBD | TBD | Backend / Frontend / Database |
-| TBD | TBD | Backend / Frontend / Database |
-| TBD | TBD | Backend / Frontend / Database |
+
+| MSSV       | Họ tên            | Vai trò                       |
+| ---------- | ----------------- | ----------------------------- |
+| 2251010038 | Trần Văn Trí Hửu  | Backend / Frontend / Database |
+| 2251010029 | Nguyễn Cẩm Hiền   | Backend / Frontend / Database |
+| 2251010065 | Hồ Lê Thảo Nguyên | Backend / Frontend / Database |
 
 ## Công nghệ sử dụng
+
 - Backend: Spring Boot 4, Java 25
 - Frontend: ReactJS + Vite
 - Database: MySQL
@@ -23,27 +26,32 @@ Clinic Management System là hệ thống quản lý phòng khám với 3 vai tr
 ## Cài đặt và chạy
 
 ### Yêu cầu
+
 - Java 17+  
   Thực tế project đang dùng `Java 25` trong `backend/pom.xml`
 - Node.js 18+
 - MySQL 8+
 
 ### Cấu hình mặc định
+
 - Database name: `clinic_management`
 - Backend port: `8080`
 - Frontend port: `5173`
 
 Theo [application.properties](/d:/clinic-management/backend/src/main/resources/application.properties:1):
+
 - MySQL username: `root`
 - MySQL password: `123456`
 
 ### Chạy Backend
+
 ```powershell
 cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
 ### Chạy Frontend
+
 ```powershell
 cd frontend
 npm install
@@ -51,6 +59,7 @@ npm run dev
 ```
 
 ### Truy cập
+
 - Frontend: `http://localhost:5173`
 - Backend API: `http://localhost:8080`
 
@@ -69,6 +78,7 @@ npm run dev
 - `admin.demo.1 / doctor123`
 
 Seed hiện có:
+
 - demo doctors
 - demo patients
 - demo admin
@@ -85,6 +95,7 @@ Seed hiện có:
 ## Tính năng chính
 
 ### Patient
+
 - Đặt lịch khám online, chọn bác sĩ, ngày, giờ
 - Thanh toán đặt cọc
 - Xem lịch sử khám bệnh
@@ -93,6 +104,7 @@ Seed hiện có:
 - Đánh giá bác sĩ
 
 ### Doctor
+
 - Xem lịch khám trong ngày
 - Khám bệnh, ghi chẩn đoán
 - Kê đơn thuốc
@@ -101,6 +113,7 @@ Seed hiện có:
 - Quản lý hồ sơ cá nhân
 
 ### Admin
+
 - Quản lý bác sĩ CRUD
 - Quản lý danh mục chuyên khoa CRUD
 - Quản lý danh mục thuốc CRUD
@@ -109,9 +122,11 @@ Seed hiện có:
 - Quản lý thông báo
 
 ## Demo
+
 - Có thể bổ sung link video demo hoặc screenshots tại đây.
 
 ## Tài liệu
+
 - [Phân tích yêu cầu](docs/requirements.md)
 - [Database Design](docs/database-design.md)
 - [API Documentation](docs/api-docs.md)
