@@ -3,10 +3,10 @@ package com.clinic.backend.service;
 import com.clinic.backend.dto.auth.AuthResponse;
 import com.clinic.backend.dto.auth.LoginRequest;
 import com.clinic.backend.dto.auth.RegisterRequest;
-import com.clinic.backend.entity.RefreshToken;
-import com.clinic.backend.entity.Role;
-import com.clinic.backend.entity.User;
+import com.clinic.backend.entity.*;
 import com.clinic.backend.exception.ApiException;
+import com.clinic.backend.repository.DoctorRepository;
+import com.clinic.backend.repository.PatientRepository;
 import com.clinic.backend.repository.UserRepository;
 import com.clinic.backend.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,15 +19,21 @@ import java.util.Optional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
 
     public AuthService(UserRepository userRepository,
+                       PatientRepository patientRepository,
+                       DoctorRepository doctorRepository,
                        PasswordEncoder passwordEncoder,
                        JwtService jwtService,
                        RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
+        this.patientRepository = patientRepository;
+        this.doctorRepository = doctorRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
@@ -44,20 +50,23 @@ public class AuthService {
             throw new ApiException("Email đã được sử dụng");
         }
 
+        Role role = parseRole(request.getRole());
+
         User user = new User();
         user.setUsername(request.getUsername().trim());
         user.setEmail(request.getEmail().trim());
         user.setFullName(request.getFullName().trim());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole(parseRole(request.getRole()));
+        user.setRole(role);
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        createProfileIfNeeded(savedUser);
 
         return new AuthResponse(
                 "Đăng ký thành công",
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole().name(),
+                savedUser.getUsername(),
+                savedUser.getEmail(),
+                savedUser.getRole().name(),
                 null,
                 null
         );
@@ -67,7 +76,6 @@ public class AuthService {
         validateLoginRequest(request);
 
         String usernameOrEmail = request.getUsernameOrEmail().trim();
-
         Optional<User> optionalUser = userRepository.findByUsername(usernameOrEmail);
 
         if (optionalUser.isEmpty()) {
@@ -124,6 +132,22 @@ public class AuthService {
         );
 
         return Map.of("accessToken", newAccessToken);
+    }
+
+    private void createProfileIfNeeded(User user) {
+        if (user.getRole() == Role.PATIENT && patientRepository.findByUserId(user.getId()).isEmpty()) {
+            Patient patient = new Patient();
+            patient.setUser(user);
+            patientRepository.save(patient);
+        }
+
+        if (user.getRole() == Role.DOCTOR && doctorRepository.findByUserId(user.getId()).isEmpty()) {
+            Doctor doctor = new Doctor();
+            doctor.setUser(user);
+            doctor.setSpecialty("General");
+            doctor.setExperience(0);
+            doctorRepository.save(doctor);
+        }
     }
 
     private void validateRegisterRequest(RegisterRequest request) {

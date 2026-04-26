@@ -1,34 +1,47 @@
 package com.clinic.backend.controller;
 
-import com.clinic.backend.repository.DoctorRepository;
+import com.clinic.backend.dto.common.ApiResponse;
+import com.clinic.backend.service.PatientPortalService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
 
 @RestController
 @RequestMapping("/api/doctors")
 @CrossOrigin(origins = "http://localhost:5173")
+@RequiredArgsConstructor
 public class DoctorController {
 
-    private final DoctorRepository doctorRepository;
-
-    public DoctorController(DoctorRepository doctorRepository) {
-        this.doctorRepository = doctorRepository;
-    }
+    private final PatientPortalService patientPortalService;
 
     @GetMapping
-    public List<Map<String, Object>> getAllDoctors() {
-        return doctorRepository.findAll()
-                .stream()
-                .map(d -> {
-                    Map<String, Object> res = new HashMap<>();
-                    res.put("id", d.getId());
-                    res.put("name", d.getName());
-                    res.put("specialty", d.getSpecialty());
-                    res.put("experience", d.getExperience());
-                    return res;
-                })
-                .toList();
+    public ResponseEntity<?> getAllDoctors() {
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Lấy danh sách bác sĩ thành công",
+                patientPortalService.getDoctors()
+        ));
+    }
+
+    @GetMapping("/{id}/slots")
+    public ResponseEntity<?> getDoctorSlots(
+            @PathVariable Long id,
+            @RequestParam String date
+    ) {
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Lấy slot khám thành công",
+                patientPortalService.getAvailableSlots(id, date)
+        ));
+    }
+
+    @GetMapping("/{id}/reviews")
+    public ResponseEntity<?> getDoctorReviews(@PathVariable Long id) {
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Lấy đánh giá bác sĩ thành công",
+                patientPortalService.getDoctorReviews(id)
+        ));
     }
 
     @GetMapping("/test")

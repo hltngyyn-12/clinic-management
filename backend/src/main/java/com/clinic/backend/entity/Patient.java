@@ -48,6 +48,6 @@ public class Patient {
     }
 
     public String getName() {
-        throw new UnsupportedOperationException("Unimplemented method 'getName'");
+        return user != null ? user.getFullName() : "Unknown Patient";
     }
 }

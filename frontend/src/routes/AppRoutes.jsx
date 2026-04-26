@@ -1,19 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
-import DashboardLayout from "../layouts/DashboardLayout";
 
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import DoctorListPage from "../pages/DoctorListPage";
-import BookingPage from "../pages/BookingPage";
 import MyAppointmentsPage from "../pages/MyAppointmentsPage";
 import MedicalRecordPage from "../pages/MedicalRecordPage";
 import CreateMedicalRecordPage from "../pages/CreateMedicalRecordPage";
-
-function PatientPage() {
-  return <h2>Patient Dashboard</h2>;
-}
+import PrescriptionsPage from "../pages/PrescriptionsPage";
+import TestResultsPage from "../pages/TestResultsPage";
+import MyReviewsPage from "../pages/MyReviewsPage";
 
 function getRoleFromStorage() {
   try {
@@ -23,7 +20,6 @@ function getRoleFromStorage() {
     if (!rawUser && savedRole) return savedRole.toUpperCase();
 
     const user = rawUser ? JSON.parse(rawUser) : null;
-
     const role =
       user?.role ||
       user?.roles?.[0] ||
@@ -67,19 +63,19 @@ function AppRoutes() {
           <Route path="register" element={<RegisterPage />} />
 
           <Route
-            path="dashboard"
+            path="doctors"
             element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
+              <RoleRoute allow={["PATIENT"]}>
+                <DoctorListPage />
+              </RoleRoute>
             }
           />
 
           <Route
-            path="patient"
+            path="appointments"
             element={
               <RoleRoute allow={["PATIENT"]}>
-                <PatientPage />
+                <MyAppointmentsPage />
               </RoleRoute>
             }
           />
@@ -87,8 +83,35 @@ function AppRoutes() {
           <Route
             path="medical-records"
             element={
-              <RoleRoute allow={["DOCTOR", "PATIENT", "ADMIN"]}>
+              <RoleRoute allow={["PATIENT"]}>
                 <MedicalRecordPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="prescriptions"
+            element={
+              <RoleRoute allow={["PATIENT"]}>
+                <PrescriptionsPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="test-results"
+            element={
+              <RoleRoute allow={["PATIENT"]}>
+                <TestResultsPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="reviews"
+            element={
+              <RoleRoute allow={["PATIENT"]}>
+                <MyReviewsPage />
               </RoleRoute>
             }
           />
@@ -103,29 +126,11 @@ function AppRoutes() {
           />
 
           <Route
-            path="doctors"
+            path="dashboard"
             element={
               <ProtectedRoute>
-                <DoctorListPage />
+                <Navigate to="/" replace />
               </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="booking/:doctorId"
-            element={
-              <RoleRoute allow={["PATIENT"]}>
-                <BookingPage />
-              </RoleRoute>
-            }
-          />
-
-          <Route
-            path="appointments"
-            element={
-              <RoleRoute allow={["PATIENT"]}>
-                <MyAppointmentsPage />
-              </RoleRoute>
             }
           />
         </Route>

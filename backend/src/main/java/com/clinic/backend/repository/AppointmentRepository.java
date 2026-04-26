@@ -13,11 +13,13 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByDoctorId(Long doctorId);
 
-    // ✅ check trùng lịch
+    List<Appointment> findByDoctorIdAndAppointmentDate(Long doctorId, LocalDate appointmentDate);
+
+    List<Appointment> findByPatientUserUsernameOrderByAppointmentDateDescSlotTimeDesc(String username);
+
     boolean existsByDoctorIdAndAppointmentDateAndSlotTime(
             Long doctorId,
             LocalDate appointmentDate,
             LocalTime slotTime
     );
-
 }

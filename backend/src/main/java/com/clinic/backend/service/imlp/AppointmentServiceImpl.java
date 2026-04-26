@@ -63,6 +63,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         ap.setSlotTime(time);
         ap.setReason(reason);
         ap.setStatus("BOOKED");
+        ap.setPaymentStatus("UNPAID");
+        ap.setDepositAmount(100000d);
+        ap.setReviewed(false);
+        ap.setReviewRating(null);
+        ap.setReviewComment(null);
 
         return appointmentRepository.save(ap);
     }
@@ -116,6 +121,11 @@ public Appointment createByUsername(String username, Long doctorId, LocalDate da
     ap.setSlotTime(time);
     ap.setReason(reason);
     ap.setStatus("BOOKED");
+    ap.setPaymentStatus("UNPAID");
+    ap.setDepositAmount(100000d);
+    ap.setReviewed(false);
+    ap.setReviewRating(null);
+    ap.setReviewComment(null);
 
     return appointmentRepository.save(ap);
 }

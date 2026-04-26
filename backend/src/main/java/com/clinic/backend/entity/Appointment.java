@@ -47,6 +47,15 @@ public class Appointment {
     @Column(name = "payment_status")
     private String paymentStatus;
 
+    @Column(nullable = false)
+    private Boolean reviewed;
+
+    @Column(name = "review_rating")
+    private Integer reviewRating;
+
+    @Column(name = "review_comment", columnDefinition = "TEXT")
+    private String reviewComment;
+
     @Column(name = "created_at", updatable = false, insertable = false)
     private java.time.LocalDateTime createdAt;
 }
