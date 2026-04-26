@@ -13,5 +13,7 @@ public class CreateMedicalRecordRequest {
     @NotBlank(message = "Diagnosis is required")
     private String diagnosis;
 
+    private String symptoms;
     private String notes;
+    private String followUpDate;
 }

@@ -14,6 +14,10 @@ public class Patient {
 
     private Date dateOfBirth;
     private String gender;
+    private String address;
+
+    @Column(name = "insurance_number")
+    private String insuranceNumber;
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -37,6 +41,22 @@ public class Patient {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getInsuranceNumber() {
+        return insuranceNumber;
+    }
+
+    public void setInsuranceNumber(String insuranceNumber) {
+        this.insuranceNumber = insuranceNumber;
     }
 
     public User getUser() {

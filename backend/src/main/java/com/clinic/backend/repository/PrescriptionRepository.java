@@ -7,4 +7,8 @@ import java.util.List;
 
 public interface PrescriptionRepository extends JpaRepository<Prescription, Long> {
     List<Prescription> findByMedicalRecordPatientUserUsernameOrderByIdDesc(String username);
+
+    List<Prescription> findByMedicalRecordPatientIdOrderByIdDesc(Long patientId);
+
+    List<Prescription> findByMedicalRecordIdOrderByIdDesc(Long medicalRecordId);
 }

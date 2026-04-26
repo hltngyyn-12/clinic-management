@@ -30,6 +30,10 @@ public class MedicalRecord {
 
     private String diagnosis;
     private String notes;
+    private String symptoms;
+
+    @Column(name = "follow_up_date")
+    private LocalDate followUpDate;
 
     private LocalDate createdAt;
 }

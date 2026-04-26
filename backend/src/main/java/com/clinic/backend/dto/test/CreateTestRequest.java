@@ -12,4 +12,6 @@ public class CreateTestRequest {
 
     @NotBlank
     private String testName;
+
+    private String requestNote;
 }

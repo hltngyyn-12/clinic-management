@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 function HomePage() {
   const { user, role } = useContext(AuthContext);
@@ -12,13 +12,10 @@ function HomePage() {
         <div>
           <h1 style={styles.title}>Clinic Management</h1>
           <p style={styles.subtitle}>
-            Đăng nhập để đặt lịch khám, thanh toán đặt cọc và theo dõi hồ sơ sức
-            khỏe online.
+            Sign in to book appointments, pay deposits, review medical history and manage online
+            clinic workflows.
           </p>
-          <button
-            style={styles.primaryButton}
-            onClick={() => navigate("/login")}
-          >
+          <button style={styles.primaryButton} onClick={() => navigate("/login")}>
             Login
           </button>
         </div>
@@ -29,41 +26,46 @@ function HomePage() {
   const patientCards = [
     {
       title: "Book Appointment",
-      description: "Chọn bác sĩ, ngày khám và giờ khám online.",
+      description: "Choose doctor, date and time for an online appointment.",
       action: () => navigate("/doctors"),
     },
     {
-      title: "Appointment & Deposit",
-      description: "Thanh toán đặt cọc và đánh giá bác sĩ sau khám.",
+      title: "Appointments",
+      description: "Track bookings, pay deposits and send doctor reviews.",
       action: () => navigate("/appointments"),
     },
     {
       title: "Medical History",
-      description: "Xem lại lịch sử khám và chẩn đoán.",
+      description: "Review diagnoses and past visit information.",
       action: () => navigate("/medical-records"),
     },
     {
       title: "Prescriptions",
-      description: "Xem đơn thuốc điện tử.",
+      description: "See electronic prescriptions and medication instructions.",
       action: () => navigate("/prescriptions"),
     },
     {
       title: "Test Results",
-      description: "Theo dõi kết quả xét nghiệm online.",
+      description: "Follow lab and diagnostic results online.",
       action: () => navigate("/test-results"),
     },
     {
       title: "My Reviews",
-      description: "Kiểm tra các đánh giá bạn đã gửi.",
+      description: "Check reviews you already submitted after visits.",
       action: () => navigate("/reviews"),
     },
   ];
 
   const doctorCards = [
     {
-      title: "Create Medical Record",
-      description: "Ghi nhận chẩn đoán cho bệnh nhân sau buổi khám.",
-      action: () => navigate("/doctor/create-record"),
+      title: "Today Schedule",
+      description: "See today's appointments, examine patients, prescribe and request tests.",
+      action: () => navigate("/doctor/workspace"),
+    },
+    {
+      title: "Doctor Profile",
+      description: "Manage doctor profile, room, working time and consultation fee.",
+      action: () => navigate("/doctor/profile"),
     },
   ];
 
@@ -77,8 +79,8 @@ function HomePage() {
           <h1 style={styles.title}>Welcome, {user.username}</h1>
           <p style={styles.subtitle}>
             {role === "DOCTOR"
-              ? "Truy cập nhanh các công việc khám bệnh."
-              : "Hãy trải nghiệm tính năng đặt lịch, thanh toán, xem lịch sử khám, đơn thuốc, kết quả xét nghiệm và đánh giá bác sĩ."}
+              ? "Open the doctor workspace to manage today's care flow and patient history."
+              : "Use the patient portal to book appointments, pay deposits, read prescriptions, test results and reviews."}
           </p>
         </div>
       </div>

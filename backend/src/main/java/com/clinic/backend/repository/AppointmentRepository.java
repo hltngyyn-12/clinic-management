@@ -17,6 +17,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByPatientUserUsernameOrderByAppointmentDateDescSlotTimeDesc(String username);
 
+    List<Appointment> findByDoctorUserUsernameAndAppointmentDateOrderBySlotTimeAsc(String username, LocalDate appointmentDate);
+
+    List<Appointment> findByPatientIdOrderByAppointmentDateDescSlotTimeDesc(Long patientId);
+
     boolean existsByDoctorIdAndAppointmentDateAndSlotTime(
             Long doctorId,
             LocalDate appointmentDate,

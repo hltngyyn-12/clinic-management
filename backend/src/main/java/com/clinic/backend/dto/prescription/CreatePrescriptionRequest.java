@@ -13,8 +13,13 @@ public class CreatePrescriptionRequest {
     @NotBlank
     private String medicineName;
 
+    @NotNull
+    private Long medicineId;
+
     @NotBlank
     private String dosage;
 
+    private String frequency;
+    private String duration;
     private String instructions;
 }

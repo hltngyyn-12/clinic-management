@@ -137,6 +137,33 @@ INSERT INTO appointments (
 VALUES (
     (SELECT id FROM patients WHERE user_id = (SELECT id FROM users WHERE username = 'patient.demo.1')),
     (SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE username = 'doctor.demo.1')),
+    CURDATE(),
+    '11:00:00',
+    'BOOKED',
+    'DEMO: Today cardiology review for doctor workspace',
+    100000,
+    'PAID',
+    0,
+    NULL,
+    NULL
+);
+
+INSERT INTO appointments (
+    patient_id,
+    doctor_id,
+    appointment_date,
+    slot_time,
+    status,
+    reason,
+    deposit_amount,
+    payment_status,
+    reviewed,
+    review_rating,
+    review_comment
+)
+VALUES (
+    (SELECT id FROM patients WHERE user_id = (SELECT id FROM users WHERE username = 'patient.demo.1')),
+    (SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE username = 'doctor.demo.1')),
     DATE_ADD(CURDATE(), INTERVAL 2 DAY),
     '09:00:00',
     'BOOKED',

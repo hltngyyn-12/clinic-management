@@ -92,7 +92,7 @@ function LoginPage() {
       alert("Đăng nhập thành công.");
 
       if (role === "DOCTOR") {
-        navigate("/doctor/create-record");
+        navigate("/doctor/workspace");
       } else {
         navigate("/");
       }

@@ -146,6 +146,11 @@ public class AuthService {
             doctor.setUser(user);
             doctor.setSpecialty("General");
             doctor.setExperience(0);
+            doctor.setActive(true);
+            doctor.setExperienceYears(0);
+            doctor.setWorkingStart("09:00");
+            doctor.setWorkingEnd("17:00");
+            doctor.setSlotDurationMinutes(60);
             doctorRepository.save(doctor);
         }
     }

@@ -25,6 +25,9 @@ public class User {
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
+    @Column(length = 20)
+    private String phone;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;
@@ -84,6 +87,14 @@ public class User {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public Role getRole() {

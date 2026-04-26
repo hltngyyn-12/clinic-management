@@ -24,7 +24,8 @@ function MainLayout() {
 
   const doctorLinks = [
     { to: "/", label: "Home" },
-    { to: "/doctor/create-record", label: "Create Record" },
+    { to: "/doctor/workspace", label: "Workspace" },
+    { to: "/doctor/profile", label: "Profile" },
   ];
 
   const links = role === "DOCTOR" ? doctorLinks : patientLinks;
