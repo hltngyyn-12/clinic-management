@@ -93,6 +93,8 @@ function LoginPage() {
 
       if (role === "DOCTOR") {
         navigate("/doctor/workspace");
+      } else if (role === "ADMIN") {
+        navigate("/admin/doctors");
       } else {
         navigate("/");
       }

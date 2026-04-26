@@ -26,6 +26,9 @@ public class Doctor {
 
     private String degree;
 
+    @Column(name = "specialty_id")
+    private Long specialtyId;
+
     @Column(name = "experience_years")
     private Integer experienceYears;
 
@@ -96,6 +99,14 @@ public class Doctor {
 
     public void setDegree(String degree) {
         this.degree = degree;
+    }
+
+    public Long getSpecialtyId() {
+        return specialtyId;
+    }
+
+    public void setSpecialtyId(Long specialtyId) {
+        this.specialtyId = specialtyId;
     }
 
     public Integer getExperienceYears() {

@@ -69,7 +69,26 @@ function HomePage() {
     },
   ];
 
-  const cards = role === "DOCTOR" ? doctorCards : patientCards;
+  const adminCards = [
+    {
+      title: "Doctor CRUD",
+      description: "Create, view, update and delete doctor accounts.",
+      action: () => navigate("/admin/doctors"),
+    },
+    {
+      title: "Catalog CRUD",
+      description: "Manage specialty catalog and medicine catalog.",
+      action: () => navigate("/admin/catalog"),
+    },
+    {
+      title: "Operations",
+      description: "Configure slot templates, revenue report and notifications.",
+      action: () => navigate("/admin/operations"),
+    },
+  ];
+
+  const cards =
+    role === "DOCTOR" ? doctorCards : role === "ADMIN" ? adminCards : patientCards;
 
   return (
     <div style={styles.page}>
@@ -80,7 +99,9 @@ function HomePage() {
           <p style={styles.subtitle}>
             {role === "DOCTOR"
               ? "Open the doctor workspace to manage today's care flow and patient history."
-              : "Use the patient portal to book appointments, pay deposits, read prescriptions, test results and reviews."}
+              : role === "ADMIN"
+                ? "Open the admin portal to manage doctors, catalogs, slot configurations, revenue reports and notifications."
+                : "Use the patient portal to book appointments, pay deposits, read prescriptions, test results and reviews."}
           </p>
         </div>
       </div>

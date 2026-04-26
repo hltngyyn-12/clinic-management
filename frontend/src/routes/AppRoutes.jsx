@@ -13,6 +13,9 @@ import TestResultsPage from "../pages/TestResultsPage";
 import MyReviewsPage from "../pages/MyReviewsPage";
 import DoctorWorkspacePage from "../pages/DoctorWorkspacePage";
 import DoctorProfilePage from "../pages/DoctorProfilePage";
+import AdminDoctorsPage from "../pages/AdminDoctorsPage";
+import AdminCatalogPage from "../pages/AdminCatalogPage";
+import AdminOperationsPage from "../pages/AdminOperationsPage";
 
 function getRoleFromStorage() {
   try {
@@ -141,6 +144,33 @@ function AppRoutes() {
             element={
               <RoleRoute allow={["DOCTOR"]}>
                 <CreateMedicalRecordPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="admin/doctors"
+            element={
+              <RoleRoute allow={["ADMIN"]}>
+                <AdminDoctorsPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="admin/catalog"
+            element={
+              <RoleRoute allow={["ADMIN"]}>
+                <AdminCatalogPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="admin/operations"
+            element={
+              <RoleRoute allow={["ADMIN"]}>
+                <AdminOperationsPage />
               </RoleRoute>
             }
           />

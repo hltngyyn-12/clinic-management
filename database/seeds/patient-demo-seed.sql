@@ -71,11 +71,11 @@ WHERE user_id IN (
 DELETE FROM refresh_tokens
 WHERE user_id IN (
     SELECT id FROM users
-    WHERE username IN ('doctor.demo.1', 'doctor.demo.2', 'patient.demo.1', 'patient.demo.2')
+    WHERE username IN ('doctor.demo.1', 'doctor.demo.2', 'patient.demo.1', 'patient.demo.2', 'admin.demo.1')
 );
 
 DELETE FROM users
-WHERE username IN ('doctor.demo.1', 'doctor.demo.2', 'patient.demo.1', 'patient.demo.2');
+WHERE username IN ('doctor.demo.1', 'doctor.demo.2', 'patient.demo.1', 'patient.demo.2', 'admin.demo.1');
 
 SET FOREIGN_KEY_CHECKS = 1;
 SET SQL_SAFE_UPDATES = 1;
@@ -85,13 +85,15 @@ SET SQL_SAFE_UPDATES = 1;
 -- doctor.demo.2 / doctor123
 -- patient.demo.1 / patient123
 -- patient.demo.2 / patient123
+-- admin.demo.1 / doctor123
 
 INSERT INTO users (username, email, password_hash, full_name, role, active, created_at)
 VALUES
 ('doctor.demo.1', 'doctor.demo.1@clinic.local', '$2a$10$gQDtMZtAGEDLAMZ04gQ8XuqYQ03/I5k3.hYukgeToDqIwQbLQu3xq', 'Dr. Nguyen Hoang Minh', 'DOCTOR', 1, NOW()),
 ('doctor.demo.2', 'doctor.demo.2@clinic.local', '$2a$10$gQDtMZtAGEDLAMZ04gQ8XuqYQ03/I5k3.hYukgeToDqIwQbLQu3xq', 'Dr. Tran Thu Ha', 'DOCTOR', 1, NOW()),
 ('patient.demo.1', 'patient.demo.1@clinic.local', '$2a$10$tHlCJC.22R6KFBBX/2xiSuJn/PEhhgldLNm8TIOeeRcHq7zlhSupm', 'Le Thi Demo', 'PATIENT', 1, NOW()),
-('patient.demo.2', 'patient.demo.2@clinic.local', '$2a$10$tHlCJC.22R6KFBBX/2xiSuJn/PEhhgldLNm8TIOeeRcHq7zlhSupm', 'Pham Van Sample', 'PATIENT', 1, NOW());
+('patient.demo.2', 'patient.demo.2@clinic.local', '$2a$10$tHlCJC.22R6KFBBX/2xiSuJn/PEhhgldLNm8TIOeeRcHq7zlhSupm', 'Pham Van Sample', 'PATIENT', 1, NOW()),
+('admin.demo.1', 'admin.demo.1@clinic.local', '$2a$10$gQDtMZtAGEDLAMZ04gQ8XuqYQ03/I5k3.hYukgeToDqIwQbLQu3xq', 'Admin Demo', 'ADMIN', 1, NOW());
 
 INSERT INTO doctors (specialty, experience, user_id, active)
 VALUES
@@ -102,6 +104,26 @@ INSERT INTO patients (date_of_birth, gender, user_id)
 VALUES
 ('1998-04-12', 'FEMALE', (SELECT id FROM users WHERE username = 'patient.demo.1')),
 ('1993-09-21', 'MALE', (SELECT id FROM users WHERE username = 'patient.demo.2'));
+
+INSERT INTO specialties (name, description, active, created_at)
+SELECT 'Cardiology', 'Cardiology specialty for admin catalog demo', 1, NOW()
+WHERE NOT EXISTS (
+    SELECT 1 FROM specialties WHERE name = 'Cardiology'
+);
+
+INSERT INTO specialties (name, description, active, created_at)
+SELECT 'Dermatology', 'Dermatology specialty for admin catalog demo', 1, NOW()
+WHERE NOT EXISTS (
+    SELECT 1 FROM specialties WHERE name = 'Dermatology'
+);
+
+UPDATE doctors
+SET specialty_id = (SELECT id FROM specialties WHERE name = 'Cardiology' LIMIT 1)
+WHERE user_id = (SELECT id FROM users WHERE username = 'doctor.demo.1');
+
+UPDATE doctors
+SET specialty_id = (SELECT id FROM specialties WHERE name = 'Dermatology' LIMIT 1)
+WHERE user_id = (SELECT id FROM users WHERE username = 'doctor.demo.2');
 
 INSERT INTO medicines (name, unit, stock_quantity, price, description, active)
 SELECT 'Cetirizine 10mg', 'tablet', 200, 2500, 'Demo seed medicine for allergy treatment', 1
@@ -119,6 +141,18 @@ INSERT INTO medicines (name, unit, stock_quantity, price, description, active)
 SELECT 'Nitroglycerin 0.5mg', 'tablet', 120, 5000, 'Demo seed medicine for chest pain relief', 1
 WHERE NOT EXISTS (
     SELECT 1 FROM medicines WHERE name = 'Nitroglycerin 0.5mg'
+);
+
+INSERT INTO slot_configs (name, working_start, working_end, slot_duration_minutes, active, notes, created_at)
+SELECT 'Standard Morning', '08:00', '12:00', 30, 1, 'Admin demo slot config for morning sessions', NOW()
+WHERE NOT EXISTS (
+    SELECT 1 FROM slot_configs WHERE name = 'Standard Morning'
+);
+
+INSERT INTO notifications (title, message, target_role, active, created_at)
+SELECT 'Demo System Notice', 'Please arrive 10 minutes before your scheduled appointment.', 'PATIENT', 1, NOW()
+WHERE NOT EXISTS (
+    SELECT 1 FROM notifications WHERE title = 'Demo System Notice'
 );
 
 INSERT INTO appointments (

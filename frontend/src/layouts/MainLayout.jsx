@@ -28,7 +28,15 @@ function MainLayout() {
     { to: "/doctor/profile", label: "Profile" },
   ];
 
-  const links = role === "DOCTOR" ? doctorLinks : patientLinks;
+  const adminLinks = [
+    { to: "/", label: "Home" },
+    { to: "/admin/doctors", label: "Doctors" },
+    { to: "/admin/catalog", label: "Catalog" },
+    { to: "/admin/operations", label: "Operations" },
+  ];
+
+  const links =
+    role === "DOCTOR" ? doctorLinks : role === "ADMIN" ? adminLinks : patientLinks;
 
   return (
     <div style={{ minHeight: "100vh", background: "#eef2ff" }}>
