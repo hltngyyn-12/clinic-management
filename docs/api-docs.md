@@ -1,391 +1,230 @@
 # API Documentation
 
 ## Base URL
+`http://localhost:8080`
 
-/api
+## Authentication
+Tất cả API nghiệp vụ dùng JWT Bearer Token, trừ:
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `GET /`
+- `GET /api/test`
 
----
+Header mẫu:
+```http
+Authorization: Bearer <jwt-token>
+```
 
-# 1. Authentication
+## 1. Authentication
 
-## Register
+### POST /api/auth/register
+Đăng ký tài khoản.
 
-POST /api/auth/register
-
-Description:
-Create a new user account.
-
-Request Body
-
+Request body:
+```json
 {
-  "username": "user1",
-  "email": "user@email.com",
+  "username": "patient01",
+  "email": "patient01@clinic.local",
   "password": "123456",
-  "full_name": "Nguyen Van A"
+  "fullName": "Nguyen Van A",
+  "role": "PATIENT"
 }
+```
 
-Database tables:
-users
+### POST /api/auth/login
+Đăng nhập bằng `usernameOrEmail` và `password`.
 
----
+### POST /api/auth/refresh
+Lấy access token mới từ refresh token.
 
-## Login
+### GET /api/auth/me
+Lấy thông tin user hiện tại.
 
-POST /api/auth/login
+## 2. Common / Utility
 
-Description:
-Authenticate user and return JWT token.
+### GET /
+Health check đơn giản.
 
-Request Body
+### GET /api/test
+Test endpoint.
 
+### GET /api/doctors
+Danh sách bác sĩ cho patient booking.
+
+### GET /api/doctors/{id}/slots?date=yyyy-MM-dd
+Lấy slot trống của bác sĩ theo ngày.
+
+### GET /api/doctors/{id}/reviews
+Lấy review của bác sĩ.
+
+## 3. Patient APIs
+Base path: `/api/patient`
+
+### GET /api/patient/doctors
+Lấy danh sách bác sĩ khả dụng cho patient portal.
+
+### POST /api/patient/appointments
+Đặt lịch khám.
+
+Request body:
+```json
 {
-  "username": "user1",
-  "password": "123456"
+  "doctorId": 1,
+  "date": "2026-04-30",
+  "time": "09:00",
+  "reason": "General checkup"
 }
+```
 
-Response
+### PUT /api/patient/appointments/{appointmentId}/deposit
+Thanh toán đặt cọc cho appointment.
 
+### GET /api/patient/appointments
+Lấy lịch hẹn của patient hiện tại.
+
+### GET /api/patient/medical-history
+Lấy lịch sử khám bệnh.
+
+### GET /api/patient/prescriptions
+Lấy đơn thuốc của patient hiện tại.
+
+### GET /api/patient/test-results
+Lấy kết quả xét nghiệm của patient hiện tại.
+
+### POST /api/patient/reviews
+Tạo đánh giá bác sĩ sau khám.
+
+Request body:
+```json
 {
-  "token": "jwt-token"
+  "appointmentId": 1,
+  "rating": 5,
+  "comment": "Doctor explained clearly."
 }
-
-Database tables:
-users
-
----
-
-## Get current user
-
-GET /api/auth/me
-
-Description:
-Return information about the authenticated user.
-
-Database tables:
-users
-
----
-
-# 2. Patient Profile
-
-## Get patient profile
-
-GET /api/patients/profile
-
-Description:
-Get the current patient profile.
-
-Database tables:
-patients
-users
-
----
-
-## Update patient profile
-
-PUT /api/patients/profile
-
-Description:
-Update patient information.
-
-Database tables:
-patients
-
----
-
-# 3. Specialties
-
-## Get all specialties
-
-GET /api/specialties
-
-Database tables:
-specialties
-
----
-
-## Get specialty by id
-
-GET /api/specialties/{id}
-
-Database tables:
-specialties
-
----
-
-## Create specialty
-
-POST /api/admin/specialties
-
-Database tables:
-specialties
-
----
-
-## Update specialty
-
-PUT /api/admin/specialties/{id}
-
-Database tables:
-specialties
-
----
-
-## Delete specialty
-
-DELETE /api/admin/specialties/{id}
-
-Database tables:
-specialties
-
----
-
-# 4. Doctors
-
-## Get all doctors
-
-GET /api/doctors
-
-Database tables:
-doctors
-users
-specialties
-
----
-
-## Get doctor by id
-
-GET /api/doctors/{id}
-
-Database tables:
-doctors
-users
-
----
-
-## Get doctor slots
-
-GET /api/doctors/{id}/slots
-
-Description:
-Return available appointment slots for a doctor.
-
-Database tables:
-appointments
-
----
-
-## Create doctor
-
-POST /api/admin/doctors
-
-Database tables:
-doctors
-users
-specialties
-
----
-
-## Update doctor
-
-PUT /api/admin/doctors/{id}
-
-Database tables:
-doctors
-
----
-
-## Delete doctor
-
-DELETE /api/admin/doctors/{id}
-
-Database tables:
-doctors
-
----
-
-# 5. Appointments
-
-## Create appointment
-
-POST /api/patient/appointments
-
-Description:
-Patient creates a new appointment with a doctor.
-
-Database tables:
-appointments
-patients
-doctors
-
----
-
-## Get patient appointments
-
-GET /api/patient/appointments
-
-Database tables:
-appointments
-
----
-
-## Get appointment by id
-
-GET /api/patient/appointments/{id}
-
-Database tables:
-appointments
-
----
-
-## Cancel appointment
-
-PUT /api/patient/appointments/{id}/cancel
-
-Database tables:
-appointments
-
----
-
-## Doctor today's appointments
-
-GET /api/doctor/appointments/today
-
-Database tables:
-appointments
-
----
-
-## Doctor appointments
-
-GET /api/doctor/appointments
-
-Database tables:
-appointments
-
----
-
-# 6. Medical Records
-
-## Create medical record
-
-POST /api/doctor/medical-records
-
-Description:
-Doctor creates a medical record after consultation.
-
-Database tables:
-medical_records
-appointments
-patients
-doctors
-
----
-
-## Get patient medical records
-
-GET /api/patient/medical-records
-
-Database tables:
-medical_records
-
----
-
-## Get medical record by id
-
-GET /api/patient/medical-records/{id}
-
-Database tables:
-medical_records
-
----
-
-# 7. Medicines
-
-## Get medicines
-
-GET /api/medicines
-
-Database tables:
-medicines
-
----
-
-## Create medicine
-
-POST /api/admin/medicines
-
-Database tables:
-medicines
-
----
-
-## Update medicine
-
-PUT /api/admin/medicines/{id}
-
-Database tables:
-medicines
-
----
-
-## Delete medicine
-
-DELETE /api/admin/medicines/{id}
-
-Database tables:
-medicines
-
----
-
-# 8. Test Results
-
-## Request test result
-
-POST /api/doctor/test-results/request
-
-Database tables:
-test_results
-medical_records
-
----
-
-## Get patient test results
-
-GET /api/patient/test-results
-
-Database tables:
-test_results
-
----
-
-## Get test result by id
-
-GET /api/patient/test-results/{id}
-
-Database tables:
-test_results
-
----
-
-# 9. Reviews
-
-## Create review
-
-POST /api/patient/reviews
-
-Description:
-Patient leaves review for doctor.
-
-Database tables:
-reviews
-
----
-
-## Get doctor reviews
-
-GET /api/doctors/{id}/reviews
-
-Database tables:
-reviews
-doctors
+```
+
+### GET /api/patient/reviews
+Lấy các review patient đã gửi.
+
+## 4. Doctor APIs
+Base path: `/api/doctor`
+
+### GET /api/doctor/appointments/today
+Lấy lịch khám trong ngày của bác sĩ hiện tại.
+
+### POST /api/doctor/medical-records
+Tạo hồ sơ khám bệnh từ một appointment.
+
+Request body:
+```json
+{
+  "appointmentId": 1,
+  "diagnosis": "Common cold",
+  "symptoms": "Fever, cough",
+  "notes": "Patient should rest",
+  "followUpDate": "2026-05-03"
+}
+```
+
+### POST /api/doctor/prescriptions
+Tạo đơn thuốc cho medical record.
+
+Request body:
+```json
+{
+  "medicalRecordId": 1,
+  "medicineId": 1,
+  "medicineName": "Cetirizine 10mg",
+  "dosage": "1 tablet",
+  "frequency": "2 times/day",
+  "duration": "5 days",
+  "instructions": "After meals"
+}
+```
+
+### POST /api/doctor/test-requests
+Tạo yêu cầu xét nghiệm cho medical record.
+
+Request body:
+```json
+{
+  "medicalRecordId": 1,
+  "testName": "Blood test"
+}
+```
+
+### GET /api/doctor/patients/{patientId}/history
+Xem lịch sử bệnh nhân.
+
+### GET /api/doctor/profile
+Lấy hồ sơ bác sĩ hiện tại.
+
+### PUT /api/doctor/profile
+Cập nhật hồ sơ bác sĩ hiện tại.
+
+### GET /api/doctor/medicines
+Lấy danh sách thuốc để bác sĩ kê đơn.
+
+## 5. Admin APIs
+Base path: `/api/admin`
+
+### Doctor Management
+- `GET /api/admin/doctors`
+- `GET /api/admin/doctors/{doctorId}`
+- `POST /api/admin/doctors`
+- `PUT /api/admin/doctors/{doctorId}`
+- `DELETE /api/admin/doctors/{doctorId}`
+
+### Specialty Management
+- `GET /api/admin/specialties`
+- `POST /api/admin/specialties`
+- `PUT /api/admin/specialties/{specialtyId}`
+- `DELETE /api/admin/specialties/{specialtyId}`
+
+### Medicine Management
+- `GET /api/admin/medicines`
+- `POST /api/admin/medicines`
+- `PUT /api/admin/medicines/{medicineId}`
+- `DELETE /api/admin/medicines/{medicineId}`
+
+### Slot Configuration
+- `GET /api/admin/slot-configs`
+- `POST /api/admin/slot-configs`
+- `PUT /api/admin/slot-configs/{slotConfigId}`
+- `DELETE /api/admin/slot-configs/{slotConfigId}`
+
+### Revenue Report
+### GET /api/admin/reports/revenue?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd
+Lấy báo cáo doanh thu theo khoảng ngày.
+
+### Notification Management
+- `GET /api/admin/notifications`
+- `POST /api/admin/notifications`
+- `PUT /api/admin/notifications/{notificationId}`
+- `DELETE /api/admin/notifications/{notificationId}`
+
+## 6. Legacy / Supporting Endpoints
+Project hiện vẫn còn một số endpoint hỗ trợ hoặc cũ:
+
+- `GET /api/appointments/me`
+- `POST /api/medical-records`
+- `GET /api/medical-records/{id}`
+- `POST /api/prescriptions`
+- `GET /api/prescriptions`
+- `POST /api/tests`
+- `GET /api/tests`
+- `GET /api/doctors/test`
+
+Các endpoint này vẫn tồn tại trong source hiện tại, nhưng UI chính đang ưu tiên dùng các portal API theo role: `/api/patient`, `/api/doctor`, `/api/admin`.
+
+## 7. Response Format
+Đa số endpoint trả theo wrapper:
+
+```json
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": {}
+}
+```

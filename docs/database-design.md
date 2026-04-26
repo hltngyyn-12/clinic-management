@@ -1,197 +1,251 @@
 # Database Design
 
 ## 1. Overview
+Hệ thống hiện tại sử dụng MySQL và được Hibernate cập nhật schema tự động theo source code.
 
-The clinic management system database is designed to manage users, doctors, patients, appointments, medical records, medicines, prescriptions and test results.
+Database chính: `clinic_management`
 
-The database ensures proper relationships between entities such as patients booking appointments with doctors and storing medical records.
+Các nhóm dữ liệu chính:
+- tài khoản và phân quyền
+- thông tin bác sĩ và bệnh nhân
+- lịch khám
+- hồ sơ khám bệnh
+- đơn thuốc
+- xét nghiệm
+- đánh giá bác sĩ
+- catalog và cấu hình cho admin
 
----
+## 2. Main Tables In Current Source
 
-# 2. Main Tables
+1. `users`
+2. `patients`
+3. `doctors`
+4. `appointments`
+5. `medical_records`
+6. `prescriptions`
+7. `test_requests`
+8. `test_results`
+9. `reviews`
+10. `refresh_tokens`
+11. `medicines`
+12. `specialties`
+13. `slot_configs`
+14. `notifications`
 
-1. users
-2. specialties
-3. doctors
-4. patients
-5. appointments
-6. medical_records
-7. medicines
-8. prescriptions
-9. test_results
+## 3. Table Details
 
----
-
-# 3. Table Details
-
-## users
-
-Stores system user accounts.
-
-| Column | Type | Description |
-|------|------|-------------|
-| id | BIGINT | Primary key |
-| username | VARCHAR(50) | Unique login username |
-| email | VARCHAR(100) | User email |
-| password_hash | VARCHAR(255) | Encrypted password |
-| full_name | VARCHAR(100) | Full name |
-| phone | VARCHAR(20) | Phone number |
-| role | VARCHAR(20) | User role (admin, doctor, patient) |
-| status | VARCHAR(20) | Account status |
-| created_at | TIMESTAMP | Account creation time |
-| updated_at | TIMESTAMP | Last update time |
-
----
-
-## specialties
-
-Stores doctor specialties.
+### users
+Lưu tài khoản đăng nhập của toàn hệ thống.
 
 | Column | Type | Description |
 |------|------|-------------|
 | id | BIGINT | Primary key |
-| name | VARCHAR(100) | Specialty name |
-| description | TEXT | Specialty description |
-| created_at | TIMESTAMP | Created time |
-| updated_at | TIMESTAMP | Last update time |
+| username | VARCHAR(50) | Username duy nhất |
+| email | VARCHAR(100) | Email duy nhất |
+| password_hash | VARCHAR(255) | Mật khẩu mã hóa |
+| full_name | VARCHAR(100) | Họ tên |
+| phone | VARCHAR(20) | Số điện thoại |
+| role | ENUM | `ADMIN`, `DOCTOR`, `PATIENT` |
+| active | BIT | Trạng thái hoạt động |
+| created_at | DATETIME | Ngày tạo |
 
----
-
-## doctors
-
-Stores doctor information.
-
-| Column | Type | Description |
-|------|------|-------------|
-| id | BIGINT | Primary key |
-| user_id | BIGINT | Reference to users table |
-| specialty_id | BIGINT | Reference to specialties |
-| degree | VARCHAR(100) | Medical degree |
-| experience_years | INT | Years of experience |
-| consultation_fee | DECIMAL | Consultation fee |
-| bio | TEXT | Doctor biography |
-| is_active | BOOLEAN | Active status |
-
----
-
-## patients
-
-Stores patient information.
+### patients
+Lưu hồ sơ bệnh nhân.
 
 | Column | Type | Description |
 |------|------|-------------|
 | id | BIGINT | Primary key |
-| user_id | BIGINT | Reference to users |
-| dob | DATE | Date of birth |
-| gender | VARCHAR(10) | Gender |
-| address | TEXT | Home address |
-| insurance_number | VARCHAR(50) | Insurance number |
+| user_id | BIGINT | FK đến `users` |
+| date_of_birth | DATETIME | Ngày sinh |
+| gender | VARCHAR(255) | Giới tính |
+| address | VARCHAR(255) | Địa chỉ |
+| insurance_number | VARCHAR(255) | Mã BHYT |
 
----
-
-
-## appointments
-
-Stores appointment information between patients and doctors.
-
-| Column           | Type        | Description                             |
-| ---------------- | ----------- | --------------------------------------- |
-| id               | BIGINT      | Primary key                             |
-| patient_id       | BIGINT      | Reference to patients                   |
-| doctor_id        | BIGINT      | Reference to doctors                    |
-| appointment_date | DATE        | Appointment date                        |
-| slot_time        | TIME        | Appointment time                        |
-| status           | VARCHAR(20) | Appointment status (PENDING, CANCELLED) |
-| reason           | TEXT        | Appointment reason                      |
-| deposit_amount   | DECIMAL     | Deposit amount (default = 0)            |
-| payment_status   | VARCHAR(20) | Payment status (UNPAID, PAID)           |
-| created_at       | TIMESTAMP   | Creation time (auto-generated)          |
-
----
-
-## Business Rules
-
-A doctor cannot have multiple appointments at the same time slot.
-A patient can book multiple appointments with different doctors.
-Appointment status includes:
-PENDING (default when created)
-CANCELLED (when user cancels)
-Payment is optional at booking time (default UNPAID).
-
-## medical_records
-
-Stores medical record information.
+### doctors
+Lưu hồ sơ bác sĩ.
 
 | Column | Type | Description |
 |------|------|-------------|
 | id | BIGINT | Primary key |
-| appointment_id | BIGINT | Reference to appointment |
-| doctor_id | BIGINT | Doctor reference |
-| patient_id | BIGINT | Patient reference |
-| symptoms | TEXT | Patient symptoms |
-| diagnosis | TEXT | Diagnosis |
-| notes | TEXT | Additional notes |
-| follow_up_date | DATE | Follow-up date |
-| created_at | TIMESTAMP | Created time |
+| user_id | BIGINT | FK đến `users` |
+| specialty | VARCHAR(255) | Tên chuyên khoa text |
+| specialty_id | BIGINT | FK logic đến `specialties` |
+| experience | INT | Số năm kinh nghiệm |
+| bio | VARCHAR(255) | Giới thiệu |
+| active | BIT | Trạng thái hoạt động |
+| consultation_fee | DECIMAL(38,2) | Phí khám |
+| degree | VARCHAR(255) | Học vị |
+| experience_years | INT | Số năm kinh nghiệm |
+| room_number | VARCHAR(255) | Phòng khám |
+| slot_duration_minutes | INT | Độ dài slot |
+| working_start | VARCHAR(255) | Giờ bắt đầu |
+| working_end | VARCHAR(255) | Giờ kết thúc |
 
----
-
-## medicines
-
-Stores medicine inventory.
-
-| Column | Type | Description |
-|------|------|-------------|
-| id | BIGINT | Primary key |
-| name | VARCHAR(100) | Medicine name |
-| unit | VARCHAR(20) | Unit type |
-| stock_quantity | INT | Available quantity |
-| price | DECIMAL | Medicine price |
-| description | TEXT | Medicine description |
-| is_active | BOOLEAN | Availability status |
-
----
-
-## prescriptions
-
-Stores prescriptions issued by doctors.
+### appointments
+Lưu lịch khám giữa bệnh nhân và bác sĩ.
 
 | Column | Type | Description |
 |------|------|-------------|
 | id | BIGINT | Primary key |
-| medical_record_id | BIGINT | Reference to medical record |
-| medicine_id | BIGINT | Reference to medicine |
-| dosage | VARCHAR(50) | Dosage |
-| frequency | VARCHAR(50) | Frequency |
-| duration | VARCHAR(50) | Treatment duration |
-| instructions | TEXT | Usage instructions |
+| patient_id | BIGINT | FK đến `patients` |
+| doctor_id | BIGINT | FK đến `doctors` |
+| appointment_date | DATE | Ngày khám |
+| slot_time | TIME | Giờ khám |
+| status | VARCHAR(20) | Trạng thái lịch hẹn |
+| reason | TEXT | Lý do khám |
+| deposit_amount | DOUBLE | Số tiền đặt cọc |
+| payment_status | VARCHAR(255) | `UNPAID`, `PAID` |
+| review_comment | TEXT | Nội dung review gắn với lịch hẹn |
+| review_rating | INT | Số sao review |
+| reviewed | BIT | Đã review hay chưa |
+| created_at | DATETIME(6) | Ngày tạo |
 
----
-
-## test_results
-
-Stores laboratory test results.
+### medical_records
+Lưu hồ sơ khám bệnh.
 
 | Column | Type | Description |
 |------|------|-------------|
 | id | BIGINT | Primary key |
-| medical_record_id | BIGINT | Reference to medical record |
-| test_name | VARCHAR(100) | Test name |
-| request_note | TEXT | Doctor request note |
-| result_text | TEXT | Test result |
-| result_date | DATE | Result date |
-| status | VARCHAR(20) | Test status |
+| patient_id | BIGINT | FK đến `patients` |
+| doctor_id | BIGINT | FK đến `doctors` |
+| appointment_id | BIGINT | FK đến `appointments` |
+| diagnosis | VARCHAR(255) | Chẩn đoán |
+| notes | VARCHAR(255) | Ghi chú |
+| symptoms | TEXT | Triệu chứng |
+| follow_up_date | DATE | Ngày tái khám |
+| created_at | DATE | Ngày tạo hồ sơ |
 
----
+### prescriptions
+Lưu đơn thuốc.
 
-# 4. Relationships
+| Column | Type | Description |
+|------|------|-------------|
+| id | BIGINT | Primary key |
+| medical_record_id | BIGINT | FK đến `medical_records` |
+| medicine_name | VARCHAR(255) | Tên thuốc text |
+| dosage | VARCHAR(255) | Liều dùng |
+| instructions | VARCHAR(255) | Hướng dẫn |
+| created_at | DATETIME(6) | Ngày tạo |
+| duration | VARCHAR(255) | Thời gian dùng |
+| frequency | VARCHAR(255) | Tần suất |
+| medicine_id | BIGINT | FK logic đến `medicines` |
 
-- users (1) — (1) doctors  
-- users (1) — (1) patients  
-- specialties (1) — (N) doctors  
-- doctors (1) — (N) appointments  
-- patients (1) — (N) appointments  
-- appointments (1) — (1) medical_records  
-- medical_records (1) — (N) prescriptions  
-- medicines (1) — (N) prescriptions  
-- medical_records (1) — (N) test_results
+### test_requests
+Lưu yêu cầu xét nghiệm do bác sĩ tạo.
+
+| Column | Type | Description |
+|------|------|-------------|
+| id | BIGINT | Primary key |
+| medical_record_id | BIGINT | FK đến `medical_records` |
+| test_name | VARCHAR(255) | Tên xét nghiệm |
+| status | VARCHAR(255) | Trạng thái yêu cầu |
+
+### test_results
+Lưu kết quả xét nghiệm.
+
+| Column | Type | Description |
+|------|------|-------------|
+| id | BIGINT | Primary key |
+| test_request_id | BIGINT | FK đến `test_requests` |
+| medical_record_id | BIGINT | FK đến `medical_records` |
+| test_name | VARCHAR(255) | Tên xét nghiệm |
+| request_note | TEXT | Ghi chú yêu cầu |
+| result | VARCHAR(255) | Kết quả ngắn |
+| result_text | TEXT | Mô tả chi tiết |
+| conclusion | VARCHAR(255) | Kết luận |
+| result_date | DATE | Ngày có kết quả |
+| status | VARCHAR(255) | Trạng thái |
+| created_at | DATETIME(6) | Ngày tạo |
+
+### reviews
+Lưu đánh giá bác sĩ sau khám.
+
+| Column | Type | Description |
+|------|------|-------------|
+| id | BIGINT | Primary key |
+| patient_id | BIGINT | FK đến `patients` |
+| doctor_id | BIGINT | FK đến `doctors` |
+| appointment_id | BIGINT | FK đến `appointments` |
+| rating | INT | Số sao |
+| comment | TEXT | Nội dung đánh giá |
+| created_at | DATETIME | Ngày tạo |
+
+### refresh_tokens
+Lưu refresh token cho đăng nhập JWT.
+
+| Column | Type | Description |
+|------|------|-------------|
+| id | BIGINT | Primary key |
+| token | VARCHAR | Refresh token |
+| expiry_date | DATETIME | Hạn token |
+| revoked | BIT | Đã thu hồi hay chưa |
+| user_id | BIGINT | FK đến `users` |
+
+### medicines
+Lưu danh mục thuốc.
+
+| Column | Type | Description |
+|------|------|-------------|
+| id | BIGINT | Primary key |
+| name | VARCHAR(100) | Tên thuốc |
+| unit | VARCHAR(255) | Đơn vị |
+| stock_quantity | INT | Tồn kho |
+| price | DECIMAL(38,2) | Giá thuốc |
+| description | TEXT | Mô tả |
+| active | BIT | Trạng thái hoạt động |
+| created_at | DATETIME(6) | Ngày tạo |
+
+### specialties
+Lưu danh mục chuyên khoa.
+
+| Column | Type | Description |
+|------|------|-------------|
+| id | BIGINT | Primary key |
+| name | VARCHAR(120) | Tên chuyên khoa |
+| description | TEXT | Mô tả |
+| active | BIT | Trạng thái hoạt động |
+| created_at | DATETIME | Ngày tạo |
+
+### slot_configs
+Lưu template cấu hình slot khám cho admin.
+
+| Column | Type | Description |
+|------|------|-------------|
+| id | BIGINT | Primary key |
+| name | VARCHAR(120) | Tên cấu hình |
+| working_start | VARCHAR(10) | Giờ bắt đầu |
+| working_end | VARCHAR(10) | Giờ kết thúc |
+| slot_duration_minutes | INT | Độ dài mỗi slot |
+| active | BIT | Trạng thái hoạt động |
+| notes | TEXT | Ghi chú |
+| created_at | DATETIME | Ngày tạo |
+
+### notifications
+Lưu thông báo hệ thống.
+
+| Column | Type | Description |
+|------|------|-------------|
+| id | BIGINT | Primary key |
+| title | VARCHAR(180) | Tiêu đề |
+| message | TEXT | Nội dung |
+| target_role | VARCHAR(20) | Role nhận thông báo |
+| active | BIT | Trạng thái hoạt động |
+| created_at | DATETIME | Ngày tạo |
+
+## 4. Main Relationships
+- `users` 1-1 `patients`
+- `users` 1-1 `doctors`
+- `patients` N-1 `users`
+- `doctors` N-1 `users`
+- `appointments` N-1 `patients`
+- `appointments` N-1 `doctors`
+- `medical_records` 1-1 hoặc 1-N logic theo `appointments`
+- `prescriptions` N-1 `medical_records`
+- `test_requests` N-1 `medical_records`
+- `test_results` N-1 `medical_records`
+- `reviews` N-1 `patients`
+- `reviews` N-1 `doctors`
+
+## 5. Notes
+- Một số bảng catalog và support (`specialties`, `slot_configs`, `notifications`, `refresh_tokens`) được thêm để đáp ứng luồng `ADMIN` và `JWT auth`.
+- Tài liệu này phản ánh implementation hiện tại của source code, không còn bị giới hạn ở scope rubric ban đầu `6–10 bảng`.
