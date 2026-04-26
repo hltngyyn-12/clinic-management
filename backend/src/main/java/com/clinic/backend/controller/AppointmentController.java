@@ -4,6 +4,7 @@ import com.clinic.backend.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -17,25 +18,27 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
 
-    // ✅ chỉ PATIENT được tạo
+    // ✅ FIX SECURITY (KHÔNG dùng userId nữa)
     @PreAuthorize("hasRole('PATIENT')")
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Map<String, String> req) {
+    public ResponseEntity<?> create(
+            @RequestBody Map<String, String> req,
+            Authentication authentication
+    ) {
 
-        Long userId = Long.parseLong(req.get("userId"));
+        String username = authentication.getName();
+
         Long doctorId = Long.parseLong(req.get("doctorId"));
-
         LocalDate date = LocalDate.parse(req.get("date"));
         LocalTime time = LocalTime.parse(req.get("time"));
-
         String reason = req.get("reason");
 
         return ResponseEntity.ok(
-                appointmentService.create(userId, doctorId, date, time, reason)
+                appointmentService.createByUsername(username, doctorId, date, time, reason)
         );
     }
 
-    // ✅ chỉ PATIENT xem lịch của mình
+    // giữ nguyên
     @PreAuthorize("hasRole('PATIENT')")
     @GetMapping("/me")
     public ResponseEntity<?> myAppointments(@RequestParam Long userId) {
@@ -44,7 +47,6 @@ public class AppointmentController {
         );
     }
 
-    // ✅ chỉ PATIENT được hủy
     @PreAuthorize("hasRole('PATIENT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> cancel(@PathVariable Long id) {

@@ -4,10 +4,10 @@ import com.clinic.backend.entity.Doctor;
 import com.clinic.backend.repository.DoctorRepository;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
 
 @RestController
-@RequestMapping("/api/doctors") // 👈 FIX Ở ĐÂY (THÊM S)
+@RequestMapping("/api/doctors")
 @CrossOrigin(origins = "http://localhost:5173")
 public class DoctorController {
 
@@ -17,13 +17,21 @@ public class DoctorController {
         this.doctorRepository = doctorRepository;
     }
 
-    // 👉 API chính cho frontend
     @GetMapping
-    public List<Doctor> getAllDoctors() {
-        return doctorRepository.findAll();
+    public List<Map<String, Object>> getAllDoctors() {
+        return doctorRepository.findAll()
+                .stream()
+                .map(d -> {
+                    Map<String, Object> res = new HashMap<>();
+                    res.put("id", d.getId());
+                    res.put("name", d.getName());
+                    res.put("specialty", d.getSpecialty());
+                    res.put("experience", d.getExperience());
+                    return res;
+                })
+                .toList();
     }
 
-    // 👉 test riêng
     @GetMapping("/test")
     public String testDoctor() {
         return "DOCTOR OK";

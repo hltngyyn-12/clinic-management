@@ -13,4 +13,7 @@ public interface AppointmentService {
     List<Appointment> getMyAppointments(Long userId);
 
     void cancel(Long id);
+    
+    Appointment createByUsername(String username, Long doctorId, LocalDate date, LocalTime time, String reason);
+
 }

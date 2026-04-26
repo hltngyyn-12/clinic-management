@@ -16,7 +16,7 @@ public class Doctor {
 
     @OneToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnore // 🔥 FIX Ở ĐÂY
+    @JsonIgnore
     private User user;
 
     public Long getId() {
@@ -47,8 +47,8 @@ public class Doctor {
         this.user = user;
     }
 
+    // ✅ FIX CRASH 500
     public String getName() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getName'");
+        return user != null ? user.getFullName() : "Unknown Doctor";
     }
 }
