@@ -5,31 +5,25 @@ function DashboardLayout() {
 
   return (
     <div style={styles.container}>
-      
-      {/* SIDEBAR */}
       <div style={styles.sidebar}>
-        <h2 style={styles.logo}>🏥 ClinicMS</h2>
+        <h2 style={styles.logo}>ClinicMS</h2>
 
         <nav style={styles.nav}>
-          <Link to="/" style={styles.link}>🏠 Home</Link>
+          <Link to="/" style={styles.link}>Trang chủ</Link>
 
           {role === "PATIENT" && (
             <>
-              <Link to="/appointments" style={styles.link}>📅 My Appointments</Link>
-              <Link to="/medical-record" style={styles.link}>📋 Medical Record</Link>
+              <Link to="/appointments" style={styles.link}>Lịch hẹn của tôi</Link>
+              <Link to="/medical-records" style={styles.link}>Lịch sử khám</Link>
             </>
           )}
 
           {role === "DOCTOR" && (
-            <>
-              <Link to="/doctor/create-record" style={styles.link}>🩺 Create Record</Link>
-            </>
+            <Link to="/doctor/workspace" style={styles.link}>Lịch làm việc</Link>
           )}
 
           {role === "ADMIN" && (
-            <>
-              <Link to="/admin" style={styles.link}>⚙️ Admin Panel</Link>
-            </>
+            <Link to="/admin/doctors" style={styles.link}>Quản trị hệ thống</Link>
           )}
         </nav>
 
@@ -40,11 +34,10 @@ function DashboardLayout() {
             window.location.href = "/login";
           }}
         >
-          🚪 Logout
+          Đăng xuất
         </button>
       </div>
 
-      {/* MAIN */}
       <div style={styles.main}>
         <Outlet />
       </div>
@@ -55,11 +48,7 @@ function DashboardLayout() {
 export default DashboardLayout;
 
 const styles = {
-  container: {
-    display: "flex",
-    minHeight: "100vh",
-  },
-
+  container: { display: "flex", minHeight: "100vh" },
   sidebar: {
     width: "250px",
     background: "#111827",
@@ -69,35 +58,9 @@ const styles = {
     flexDirection: "column",
     justifyContent: "space-between",
   },
-
-  logo: {
-    marginBottom: "20px",
-  },
-
-  nav: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-
-  link: {
-    color: "#ccc",
-    textDecoration: "none",
-    padding: "10px",
-    borderRadius: "8px",
-  },
-
-  main: {
-    flex: 1,
-    padding: "30px",
-    background: "#f5f7fb",
-  },
-
-  logout: {
-    padding: "10px",
-    background: "#ef4444",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-  },
+  logo: { marginBottom: "20px" },
+  nav: { display: "flex", flexDirection: "column", gap: "10px" },
+  link: { color: "#ccc", textDecoration: "none", padding: "10px", borderRadius: "8px" },
+  main: { flex: 1, padding: "30px", background: "#f5f7fb" },
+  logout: { padding: "10px", background: "#ef4444", color: "#fff", border: "none", borderRadius: "8px" },
 };

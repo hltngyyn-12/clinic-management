@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
+import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
+import {
+  createAutoGrid,
+  createHero,
+  createStatusPill,
+  gradients,
+  ui,
+} from "../styles/designSystem";
 
 const emptyDoctorForm = {
   username: "",
@@ -27,6 +35,11 @@ function AdminDoctorsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  usePageMeta(
+    "Quản lý bác sĩ",
+    "Tạo mới, cập nhật và theo dõi tài khoản bác sĩ trong cổng quản trị ClinicMS.",
+  );
+
   useEffect(() => {
     loadData();
   }, []);
@@ -41,7 +54,7 @@ function AdminDoctorsPage() {
       setDoctors(doctorRes.data?.data || []);
       setSpecialties(specialtyRes.data?.data || []);
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to load admin doctors"));
+      alert(getErrorMessage(error, "Không tải được dữ liệu bác sĩ."));
     } finally {
       setLoading(false);
     }
@@ -95,94 +108,103 @@ function AdminDoctorsPage() {
 
       if (editingId) {
         await api.put(`/api/admin/doctors/${editingId}`, payload);
-        alert("Doctor updated successfully");
+        alert("Cập nhật bác sĩ thành công.");
       } else {
         await api.post("/api/admin/doctors", payload);
-        alert("Doctor created successfully");
+        alert("Tạo bác sĩ mới thành công.");
       }
 
       resetForm();
       await loadData();
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to save doctor"));
+      alert(getErrorMessage(error, "Lưu bác sĩ thất bại."));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (doctorId) => {
-    if (!window.confirm("Delete this doctor?")) return;
+    if (!window.confirm("Bạn có chắc muốn xóa bác sĩ này?")) return;
     try {
       await api.delete(`/api/admin/doctors/${doctorId}`);
-      alert("Doctor deleted successfully");
+      alert("Xóa bác sĩ thành công.");
       if (editingId === doctorId) {
         resetForm();
       }
       await loadData();
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to delete doctor"));
+      alert(getErrorMessage(error, "Xóa bác sĩ thất bại."));
     }
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.hero}>
-        <div>
-          <div style={styles.eyebrow}>ADMIN DOCTORS</div>
-          <h1 style={styles.title}>Manage Doctor Accounts</h1>
-          <p style={styles.subtitle}>
-            Admin feature 1: create, view, update and delete doctor accounts and practice details.
-          </p>
-        </div>
-      </div>
+    <div style={ui.page}>
+      <section style={createHero(gradients.admin)}>
+        <div style={ui.eyebrow}>Quản trị đội ngũ y khoa</div>
+        <h1 style={ui.title}>Quản lý tài khoản, thông tin hành nghề và lịch làm việc của bác sĩ</h1>
+        <p style={ui.subtitle}>
+          Quản trị viên có thể tạo mới, chỉnh sửa, khóa hoặc xóa tài khoản bác sĩ trong
+          một không gian quản trị thống nhất và rõ ràng.
+        </p>
+      </section>
 
       <div style={styles.layout}>
-        <section style={styles.panel}>
-          <div style={styles.sectionHeader}>
+        <section style={ui.panel}>
+          <div style={ui.sectionHeader}>
             <div>
-              <h2 style={styles.sectionTitle}>Doctor List</h2>
-              <p style={styles.sectionHint}>All registered doctors in the system.</p>
+              <h2 style={ui.sectionTitle}>Danh sách bác sĩ</h2>
+              <p style={ui.sectionHint}>
+                Theo dõi toàn bộ bác sĩ đang hoạt động trong hệ thống.
+              </p>
             </div>
-            <button type="button" onClick={loadData} style={styles.secondaryButton}>
-              Reload
+            <button type="button" onClick={loadData} style={ui.secondaryButton}>
+              Tải lại
             </button>
           </div>
 
           {loading ? (
-            <p style={styles.muted}>Loading doctors...</p>
+            <p style={ui.muted}>Đang tải danh sách bác sĩ...</p>
           ) : doctors.length === 0 ? (
-            <p style={styles.muted}>No doctors found.</p>
+            <p style={ui.muted}>Chưa có bác sĩ nào trong hệ thống.</p>
           ) : (
-            <div style={styles.cardStack}>
+            <div style={{ display: "grid", gap: "14px" }}>
               {doctors.map((doctor) => (
-                <div key={doctor.id} style={styles.listCard}>
+                <div key={doctor.id} style={ui.listCard}>
                   <div style={styles.cardTop}>
                     <div>
                       <strong style={styles.cardName}>{doctor.fullName}</strong>
-                      <div style={styles.smallMuted}>@{doctor.username}</div>
+                      <div style={styles.accountText}>@{doctor.username}</div>
                     </div>
-                    <span
-                      style={{
-                        ...styles.statusPill,
-                        background: doctor.active ? "#dcfce7" : "#fee2e2",
-                        color: doctor.active ? "#166534" : "#991b1b",
-                      }}
-                    >
-                      {doctor.active ? "Active" : "Inactive"}
-                    </span>
+                    <div style={createStatusPill(doctor.active ? "success" : "danger")}>
+                      {doctor.active ? "Đang hoạt động" : "Tạm khóa"}
+                    </div>
                   </div>
-                  <div style={styles.infoGrid}>
-                    <span>Specialty: {doctor.specialtyName || "N/A"}</span>
-                    <span>Phone: {doctor.phone || "N/A"}</span>
-                    <span>Room: {doctor.roomNumber || "N/A"}</span>
-                    <span>Slot: {doctor.slotDurationMinutes || 0} min</span>
+
+                  <div style={createAutoGrid(150)}>
+                    <div style={styles.inlineInfo}>
+                      <span style={ui.label}>Chuyên khoa</span>
+                      <span>{doctor.specialtyName || "Chưa cập nhật"}</span>
+                    </div>
+                    <div style={styles.inlineInfo}>
+                      <span style={ui.label}>Điện thoại</span>
+                      <span>{doctor.phone || "Chưa cập nhật"}</span>
+                    </div>
+                    <div style={styles.inlineInfo}>
+                      <span style={ui.label}>Phòng khám</span>
+                      <span>{doctor.roomNumber || "Chưa cập nhật"}</span>
+                    </div>
+                    <div style={styles.inlineInfo}>
+                      <span style={ui.label}>Slot</span>
+                      <span>{doctor.slotDurationMinutes || 0} phút</span>
+                    </div>
                   </div>
-                  <div style={styles.actionRow}>
-                    <button type="button" onClick={() => handleEdit(doctor)} style={styles.primaryButton}>
-                      Edit
+
+                  <div style={ui.actionRow}>
+                    <button type="button" onClick={() => handleEdit(doctor)} style={ui.primaryButton}>
+                      Chỉnh sửa
                     </button>
-                    <button type="button" onClick={() => handleDelete(doctor.id)} style={styles.dangerButton}>
-                      Delete
+                    <button type="button" onClick={() => handleDelete(doctor.id)} style={ui.dangerButton}>
+                      Xóa
                     </button>
                   </div>
                 </div>
@@ -191,73 +213,63 @@ function AdminDoctorsPage() {
           )}
         </section>
 
-        <section style={styles.panel}>
-          <div style={styles.sectionHeader}>
+        <section style={ui.panel}>
+          <div style={ui.sectionHeader}>
             <div>
-              <h2 style={styles.sectionTitle}>{editingId ? "Update Doctor" : "Create Doctor"}</h2>
-              <p style={styles.sectionHint}>Fill doctor account and profile information.</p>
+              <h2 style={ui.sectionTitle}>{editingId ? "Cập nhật bác sĩ" : "Tạo bác sĩ mới"}</h2>
+              <p style={ui.sectionHint}>
+                Điền thông tin tài khoản, chuyên khoa và thời gian tiếp nhận khám.
+              </p>
             </div>
             {editingId ? (
-              <button type="button" onClick={resetForm} style={styles.secondaryButton}>
-                Cancel Edit
+              <button type="button" onClick={resetForm} style={ui.secondaryButton}>
+                Hủy chỉnh sửa
               </button>
             ) : null}
           </div>
 
           <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.formGrid}>
-              <input name="username" value={form.username} onChange={handleChange} placeholder="Username" style={styles.input} />
-              <input name="email" value={form.email} onChange={handleChange} placeholder="Email" style={styles.input} />
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder={editingId ? "New password (optional)" : "Password"}
-                style={styles.input}
-              />
-              <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Full name" style={styles.input} />
-              <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" style={styles.input} />
-              <select name="specialtyId" value={form.specialtyId} onChange={handleChange} style={styles.input}>
-                <option value="">Select specialty</option>
+            <div style={createAutoGrid(220)}>
+              <input name="username" value={form.username} onChange={handleChange} placeholder="Tên đăng nhập" style={ui.input} />
+              <input name="email" value={form.email} onChange={handleChange} placeholder="Email" style={ui.input} />
+              <input type="password" name="password" value={form.password} onChange={handleChange} placeholder={editingId ? "Mật khẩu mới nếu cần đổi" : "Mật khẩu"} style={ui.input} />
+              <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Họ và tên" style={ui.input} />
+              <input name="phone" value={form.phone} onChange={handleChange} placeholder="Số điện thoại" style={ui.input} />
+              <select name="specialtyId" value={form.specialtyId} onChange={handleChange} style={ui.input}>
+                <option value="">Chọn chuyên khoa</option>
                 {specialties.map((specialty) => (
                   <option key={specialty.id} value={specialty.id}>
                     {specialty.name}
                   </option>
                 ))}
               </select>
-              <input type="number" name="experience" value={form.experience} onChange={handleChange} placeholder="Experience years" style={styles.input} />
-              <input name="degree" value={form.degree} onChange={handleChange} placeholder="Degree" style={styles.input} />
-              <input name="roomNumber" value={form.roomNumber} onChange={handleChange} placeholder="Room number" style={styles.input} />
-              <input name="workingStart" value={form.workingStart} onChange={handleChange} placeholder="Working start" style={styles.input} />
-              <input name="workingEnd" value={form.workingEnd} onChange={handleChange} placeholder="Working end" style={styles.input} />
-              <input
-                type="number"
-                name="slotDurationMinutes"
-                value={form.slotDurationMinutes}
-                onChange={handleChange}
-                placeholder="Slot duration minutes"
-                style={styles.input}
-              />
-              <input
-                name="consultationFee"
-                value={form.consultationFee}
-                onChange={handleChange}
-                placeholder="Consultation fee"
-                style={styles.input}
-              />
+              <input type="number" name="experience" value={form.experience} onChange={handleChange} placeholder="Số năm kinh nghiệm" style={ui.input} />
+              <input name="degree" value={form.degree} onChange={handleChange} placeholder="Học vị / bằng cấp" style={ui.input} />
+              <input name="roomNumber" value={form.roomNumber} onChange={handleChange} placeholder="Số phòng khám" style={ui.input} />
+              <input name="workingStart" value={form.workingStart} onChange={handleChange} placeholder="Giờ bắt đầu" style={ui.input} />
+              <input name="workingEnd" value={form.workingEnd} onChange={handleChange} placeholder="Giờ kết thúc" style={ui.input} />
+              <input type="number" name="slotDurationMinutes" value={form.slotDurationMinutes} onChange={handleChange} placeholder="Thời lượng slot" style={ui.input} />
+              <input name="consultationFee" value={form.consultationFee} onChange={handleChange} placeholder="Phí tư vấn" style={ui.input} />
             </div>
 
-            <textarea name="bio" value={form.bio} onChange={handleChange} placeholder="Doctor bio" style={styles.textarea} />
+            <textarea
+              name="bio"
+              value={form.bio}
+              onChange={handleChange}
+              placeholder="Giới thiệu chuyên môn và thế mạnh của bác sĩ"
+              style={ui.textarea}
+            />
 
-            <label style={styles.checkboxRow}>
+            <label style={ui.checkboxRow}>
               <input type="checkbox" name="active" checked={form.active} onChange={handleChange} />
-              Active doctor account
+              Kích hoạt tài khoản bác sĩ
             </label>
 
-            <button type="submit" style={styles.primaryButton} disabled={saving}>
-              {saving ? "Saving..." : editingId ? "Update Doctor" : "Create Doctor"}
-            </button>
+            <div style={ui.actionRow}>
+              <button type="submit" style={ui.primaryButton} disabled={saving}>
+                {saving ? "Đang lưu..." : editingId ? "Cập nhật bác sĩ" : "Tạo bác sĩ"}
+              </button>
+            </div>
           </form>
         </section>
       </div>
@@ -265,34 +277,39 @@ function AdminDoctorsPage() {
   );
 }
 
-export default AdminDoctorsPage;
-
 const styles = {
-  page: { display: "grid", gap: "24px" },
-  hero: { background: "linear-gradient(135deg, #111827, #1d4ed8)", color: "#fff", borderRadius: "28px", padding: "34px" },
-  eyebrow: { display: "inline-flex", borderRadius: "999px", background: "rgba(255,255,255,0.15)", padding: "8px 12px", fontSize: "12px", fontWeight: 800, letterSpacing: "0.08em" },
-  title: { margin: "16px 0 0", fontSize: "36px" },
-  subtitle: { margin: "14px 0 0", maxWidth: "760px", color: "#dbeafe", lineHeight: 1.6 },
-  layout: { display: "grid", gridTemplateColumns: "minmax(320px, 1fr) minmax(360px, 1fr)", gap: "20px", alignItems: "start" },
-  panel: { background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 14px 32px rgba(15, 23, 42, 0.08)", display: "grid", gap: "18px" },
-  sectionHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", flexWrap: "wrap" },
-  sectionTitle: { margin: 0, color: "#0f172a" },
-  sectionHint: { margin: "6px 0 0", color: "#64748b" },
-  secondaryButton: { border: "1px solid #cbd5e1", background: "#fff", color: "#0f172a", borderRadius: "12px", padding: "10px 14px", fontWeight: 700, cursor: "pointer" },
-  muted: { margin: 0, color: "#64748b" },
-  cardStack: { display: "grid", gap: "14px" },
-  listCard: { border: "1px solid #dbeafe", borderRadius: "18px", padding: "16px", display: "grid", gap: "12px" },
-  cardTop: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" },
-  cardName: { color: "#0f172a", fontSize: "18px" },
-  smallMuted: { color: "#64748b", fontSize: "13px", marginTop: "4px" },
-  statusPill: { borderRadius: "999px", padding: "8px 12px", fontWeight: 800, fontSize: "12px" },
-  infoGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px", color: "#334155", fontSize: "14px" },
-  actionRow: { display: "flex", gap: "10px", flexWrap: "wrap" },
-  form: { display: "grid", gap: "14px" },
-  formGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" },
-  input: { width: "100%", border: "1px solid #cbd5e1", borderRadius: "12px", padding: "12px 14px", fontSize: "14px", background: "#fff" },
-  textarea: { width: "100%", minHeight: "120px", border: "1px solid #cbd5e1", borderRadius: "12px", padding: "12px 14px", fontSize: "14px", resize: "vertical", background: "#fff" },
-  checkboxRow: { display: "flex", alignItems: "center", gap: "10px", color: "#0f172a", fontWeight: 600 },
-  primaryButton: { border: "none", borderRadius: "12px", background: "#0f766e", color: "#fff", padding: "12px 16px", fontWeight: 800, cursor: "pointer" },
-  dangerButton: { border: "none", borderRadius: "12px", background: "#dc2626", color: "#fff", padding: "12px 16px", fontWeight: 800, cursor: "pointer" },
+  layout: {
+    display: "grid",
+    gridTemplateColumns: "minmax(340px, 1fr) minmax(380px, 1.08fr)",
+    gap: "20px",
+    alignItems: "start",
+  },
+  cardTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "14px",
+    flexWrap: "wrap",
+    marginBottom: "14px",
+  },
+  cardName: {
+    color: "#16324f",
+    fontSize: "20px",
+  },
+  accountText: {
+    marginTop: "6px",
+    color: "#6e849b",
+    fontSize: "13px",
+  },
+  inlineInfo: {
+    display: "grid",
+    gap: "6px",
+    color: "#34506e",
+    fontSize: "14px",
+  },
+  form: {
+    display: "grid",
+    gap: "16px",
+  },
 };
+
+export default AdminDoctorsPage;

@@ -1,21 +1,37 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
+import {
+  createAutoGrid,
+  createHero,
+  createStatusPill,
+  gradients,
+  ui,
+} from "../styles/designSystem";
 
 function MyAppointmentsPage() {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
   const [reviewForms, setReviewForms] = useState({});
 
+  usePageMeta(
+    "Lịch hẹn của tôi",
+    "Theo dõi lịch khám, thanh toán đặt cọc qua MoMo ATM test và gửi đánh giá bác sĩ trong cổng bệnh nhân của ClinicMS.",
+  );
+
   const loadAppointments = () => {
     setLoading(true);
+    setErrorText("");
     api
       .get("/api/patient/appointments")
-      .then((res) => {
-        setAppointments(res.data?.data || []);
+      .then((response) => {
+        setAppointments(response.data?.data || []);
       })
       .catch((error) => {
-        setErrorText(getErrorMessage(error, "Không tải được lịch khám."));
+        setErrorText(getErrorMessage(error, "Không tải được lịch hẹn."));
       })
       .finally(() => setLoading(false));
   };
@@ -29,15 +45,25 @@ function MyAppointmentsPage() {
     [appointments],
   );
 
+  const reviewedCount = useMemo(
+    () => appointments.filter((item) => item.reviewSubmitted).length,
+    [appointments],
+  );
+
   const handlePayDeposit = async (appointment) => {
     try {
-      await api.put(`/api/patient/appointments/${appointment.id}/deposit`, {
-        amount: appointment.depositAmount || 100000,
-      });
-      alert("Thanh toán đặt cọc thành công.");
-      loadAppointments();
+      const response = await api.post(
+        `/api/patient/appointments/${appointment.id}/deposit/momo`,
+      );
+      const paymentUrl = response.data?.data?.paymentUrl;
+
+      if (!paymentUrl) {
+        throw new Error("Không nhận được liên kết thanh toán MoMo ATM.");
+      }
+
+      window.location.href = paymentUrl;
     } catch (error) {
-      alert(getErrorMessage(error, "Thanh toán thất bại."));
+      alert(getErrorMessage(error, "Khởi tạo thanh toán MoMo ATM thất bại."));
     }
   };
 
@@ -51,7 +77,7 @@ function MyAppointmentsPage() {
         comment: form.comment,
       });
 
-      alert("Đánh giá bác sĩ thành công.");
+      alert("Gửi đánh giá thành công.");
       setReviewForms((prev) => ({
         ...prev,
         [appointmentId]: {
@@ -67,28 +93,50 @@ function MyAppointmentsPage() {
     }
   };
 
-  return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <div>
-          <h2 style={styles.title}>My Appointments</h2>
-          <p style={styles.subtitle}>Quản lý lịch hẹn, thanh toán đặt cọc và đánh giá bác sĩ.</p>
-        </div>
-        <div style={styles.summaryCard}>
-          <div style={styles.summaryNumber}>{appointments.length}</div>
-          <div style={styles.summaryText}>appointments</div>
-          <div style={styles.summarySub}>{unpaidCount} chưa thanh toán</div>
-        </div>
-      </div>
+  const handleViewInvoice = (appointmentId) => {
+    navigate(`/invoices/${appointmentId}`);
+  };
 
-      {loading && <div style={styles.stateCard}>Đang tải lịch khám...</div>}
-      {!loading && errorText && <div style={styles.errorCard}>{errorText}</div>}
+  return (
+    <div style={ui.page}>
+      <section style={createHero(gradients.patient)}>
+        <div style={styles.heroContent}>
+          <div>
+            <div style={ui.eyebrow}>Lịch hẹn bệnh nhân</div>
+            <h1 style={ui.title}>
+              Quản lý lịch khám, đặt cọc và phản hồi sau điều trị
+            </h1>
+            <p style={ui.subtitle}>
+              Tất cả lịch hẹn của bạn được hiển thị tập trung cùng trạng thái thanh
+              toán, lịch khám và biểu mẫu đánh giá để quá trình theo dõi minh bạch hơn.
+            </p>
+          </div>
+
+          <div style={styles.metricGrid}>
+            <div style={styles.metricCard}>
+              <span style={styles.metricLabel}>Tổng lịch hẹn</span>
+              <strong style={styles.metricValue}>{appointments.length}</strong>
+            </div>
+            <div style={styles.metricCard}>
+              <span style={styles.metricLabel}>Chưa đặt cọc</span>
+              <strong style={styles.metricValue}>{unpaidCount}</strong>
+            </div>
+            <div style={styles.metricCard}>
+              <span style={styles.metricLabel}>Đã đánh giá</span>
+              <strong style={styles.metricValue}>{reviewedCount}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {loading && <div style={ui.stateCard}>Đang tải lịch hẹn...</div>}
+      {!loading && errorText && <div style={ui.errorCard}>{errorText}</div>}
       {!loading && !errorText && appointments.length === 0 && (
-        <div style={styles.stateCard}>Bạn chưa có lịch khám nào.</div>
+        <div style={ui.stateCard}>Bạn chưa có lịch hẹn nào.</div>
       )}
 
       {!loading && !errorText && appointments.length > 0 && (
-        <div style={styles.list}>
+        <div style={{ display: "grid", gap: "18px" }}>
           {appointments.map((appointment) => {
             const form = reviewForms[appointment.id] || {
               open: false,
@@ -97,48 +145,69 @@ function MyAppointmentsPage() {
             };
 
             return (
-              <div key={appointment.id} style={styles.card}>
-                <div style={styles.topRow}>
+              <article key={appointment.id} style={ui.card}>
+                <div style={styles.cardTop}>
                   <div>
-                    <h3 style={{ margin: 0 }}>{appointment.doctorName}</h3>
-                    <p style={styles.meta}>{appointment.specialty}</p>
+                    <h3 style={styles.cardTitle}>{appointment.doctorName}</h3>
+                    <p style={styles.cardSubtitle}>
+                      {appointment.specialty || "Chưa cập nhật chuyên khoa"}
+                    </p>
                   </div>
-                  <div style={styles.status(appointment.paymentStatus)}>
-                    {appointment.paymentStatus}
+                  <div
+                    style={createStatusPill(
+                      appointment.paymentStatus === "PAID" ? "success" : "warning",
+                    )}
+                  >
+                    {appointment.paymentStatus === "PAID"
+                      ? "Đã thanh toán"
+                      : "Chưa thanh toán"}
                   </div>
                 </div>
 
-                <div style={styles.infoGrid}>
-                  <div>
-                    <div style={styles.label}>Date</div>
-                    <div>{appointment.appointmentDate}</div>
+                <div style={createAutoGrid(150)}>
+                  <div style={ui.panelSoft}>
+                    <div style={ui.label}>Ngày khám</div>
+                    <div style={styles.dataValue}>{appointment.appointmentDate}</div>
                   </div>
-                  <div>
-                    <div style={styles.label}>Time</div>
-                    <div>{appointment.slotTime}</div>
+                  <div style={ui.panelSoft}>
+                    <div style={ui.label}>Giờ khám</div>
+                    <div style={styles.dataValue}>{appointment.slotTime}</div>
                   </div>
-                  <div>
-                    <div style={styles.label}>Deposit</div>
-                    <div>{Number(appointment.depositAmount || 0).toLocaleString()} VND</div>
+                  <div style={ui.panelSoft}>
+                    <div style={ui.label}>Tiền đặt cọc</div>
+                    <div style={styles.dataValue}>
+                      {Number(appointment.depositAmount || 0).toLocaleString("vi-VN")} đ
+                    </div>
                   </div>
-                  <div>
-                    <div style={styles.label}>Status</div>
-                    <div>{appointment.status}</div>
+                  <div style={ui.panelSoft}>
+                    <div style={ui.label}>Trạng thái</div>
+                    <div style={styles.dataValue}>{appointment.status || "PENDING"}</div>
                   </div>
                 </div>
 
-                <div style={styles.reasonBox}>
-                  <strong>Reason</strong>
-                  <p style={{ margin: "8px 0 0" }}>{appointment.reason || "No reason"}</p>
+                <div style={styles.noteBox}>
+                  <div style={ui.label}>Lý do thăm khám</div>
+                  <p style={styles.noteText}>
+                    {appointment.reason || "Chưa có mô tả cho lịch hẹn này."}
+                  </p>
                 </div>
 
-                <div style={styles.actionRow}>
+                <div style={ui.actionRow}>
                   {appointment.paymentStatus !== "PAID" && (
                     <button
                       onClick={() => handlePayDeposit(appointment)}
-                      style={styles.primaryButton}
+                      style={ui.primaryButton}
                     >
-                      Pay Deposit
+                      Thanh toán đặt cọc qua MoMo ATM test
+                    </button>
+                  )}
+
+                  {appointment.paymentStatus === "PAID" && (
+                    <button
+                      onClick={() => handleViewInvoice(appointment.id)}
+                      style={ui.secondaryButton}
+                    >
+                      Xem hóa đơn
                     </button>
                   )}
 
@@ -153,37 +222,37 @@ function MyAppointmentsPage() {
                           },
                         }))
                       }
-                      style={styles.secondaryButton}
+                      style={ui.secondaryButton}
                     >
-                      {form.open ? "Hide Review Form" : "Review Doctor"}
+                      {form.open ? "Ẩn biểu mẫu đánh giá" : "Đánh giá bác sĩ"}
                     </button>
                   )}
 
                   {appointment.reviewSubmitted && (
-                    <div style={styles.reviewedBadge}>Reviewed</div>
+                    <div style={createStatusPill("info")}>Đã gửi đánh giá</div>
                   )}
                 </div>
 
                 {form.open && (
                   <div style={styles.reviewPanel}>
-                    <div style={styles.fieldRow}>
-                      <label style={styles.label}>Rating</label>
+                    <div style={styles.formRow}>
+                      <label style={ui.label}>Mức đánh giá</label>
                       <select
                         value={form.rating}
-                        onChange={(e) =>
+                        onChange={(event) =>
                           setReviewForms((prev) => ({
                             ...prev,
                             [appointment.id]: {
                               ...form,
-                              rating: e.target.value,
+                              rating: event.target.value,
                             },
                           }))
                         }
-                        style={styles.select}
+                        style={ui.input}
                       >
                         {[5, 4, 3, 2, 1].map((value) => (
                           <option key={value} value={value}>
-                            {value}
+                            {value} sao
                           </option>
                         ))}
                       </select>
@@ -191,28 +260,28 @@ function MyAppointmentsPage() {
 
                     <textarea
                       value={form.comment}
-                      onChange={(e) =>
+                      onChange={(event) =>
                         setReviewForms((prev) => ({
                           ...prev,
                           [appointment.id]: {
                             ...form,
-                            comment: e.target.value,
+                            comment: event.target.value,
                           },
                         }))
                       }
-                      placeholder="Chia sẻ trải nghiệm khám bệnh"
-                      style={styles.textarea}
+                      placeholder="Chia sẻ trải nghiệm khám bệnh của bạn"
+                      style={ui.textarea}
                     />
 
                     <button
                       onClick={() => handleSubmitReview(appointment.id)}
-                      style={styles.primaryButton}
+                      style={ui.primaryButton}
                     >
-                      Submit Review
+                      Gửi đánh giá
                     </button>
                   </div>
                 )}
-              </div>
+              </article>
             );
           })}
         </div>
@@ -221,163 +290,78 @@ function MyAppointmentsPage() {
   );
 }
 
-export default MyAppointmentsPage;
-
 const styles = {
-  page: {
+  heroContent: {
     display: "grid",
     gap: "20px",
   },
-  header: {
+  metricGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr auto",
-    gap: "20px",
-    alignItems: "stretch",
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+    gap: "14px",
   },
-  title: {
-    margin: 0,
+  metricCard: {
+    background: "rgba(255,255,255,0.14)",
+    border: "1px solid rgba(255,255,255,0.16)",
+    borderRadius: "18px",
+    padding: "18px",
+    display: "grid",
+    gap: "8px",
   },
-  subtitle: {
-    margin: "10px 0 0",
-    color: "#64748b",
-  },
-  summaryCard: {
-    background: "#0f766e",
-    color: "#fff",
-    borderRadius: "20px",
-    padding: "20px 22px",
-    minWidth: "180px",
-  },
-  summaryNumber: {
-    fontSize: "34px",
+  metricLabel: {
+    fontSize: "12px",
     fontWeight: 800,
-  },
-  summaryText: {
     textTransform: "uppercase",
     letterSpacing: "0.08em",
-    fontSize: "12px",
-    marginTop: "4px",
+    color: "rgba(255,255,255,0.78)",
   },
-  summarySub: {
-    marginTop: "10px",
-    color: "#ccfbf1",
+  metricValue: {
+    fontSize: "30px",
+    lineHeight: 1,
   },
-  stateCard: {
-    background: "#fff",
-    borderRadius: "18px",
-    padding: "18px",
-  },
-  errorCard: {
-    background: "#fff1f2",
-    color: "#9f1239",
-    borderRadius: "18px",
-    padding: "18px",
-    border: "1px solid #fecdd3",
-  },
-  list: {
-    display: "grid",
-    gap: "18px",
-  },
-  card: {
-    background: "#fff",
-    borderRadius: "20px",
-    padding: "22px",
-    boxShadow: "0 12px 30px rgba(15, 23, 42, 0.08)",
-  },
-  topRow: {
+  cardTop: {
     display: "flex",
     justifyContent: "space-between",
     gap: "16px",
     alignItems: "flex-start",
+    marginBottom: "18px",
   },
-  meta: {
+  cardTitle: {
+    margin: 0,
+    color: "#16324f",
+    fontSize: "24px",
+  },
+  cardSubtitle: {
     margin: "8px 0 0",
-    color: "#0f766e",
+    color: "#4c6e8f",
     fontWeight: 600,
   },
-  status: (paymentStatus) => ({
-    padding: "8px 12px",
-    borderRadius: "999px",
-    background: paymentStatus === "PAID" ? "#dcfce7" : "#fef3c7",
-    color: paymentStatus === "PAID" ? "#166534" : "#92400e",
+  dataValue: {
+    marginTop: "8px",
+    color: "#16324f",
     fontWeight: 700,
-    fontSize: "12px",
-  }),
-  infoGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-    gap: "14px",
+  },
+  noteBox: {
+    ...ui.panelSoft,
     marginTop: "18px",
   },
-  label: {
-    fontSize: "12px",
-    fontWeight: 700,
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: "0.08em",
-  },
-  reasonBox: {
-    marginTop: "18px",
-    padding: "16px",
-    borderRadius: "16px",
-    background: "#f8fafc",
-  },
-  actionRow: {
-    display: "flex",
-    gap: "12px",
-    marginTop: "18px",
-    flexWrap: "wrap",
-    alignItems: "center",
-  },
-  primaryButton: {
-    border: "none",
-    borderRadius: "12px",
-    background: "#0f766e",
-    color: "#fff",
-    padding: "12px 16px",
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-  secondaryButton: {
-    border: "1px solid #cbd5e1",
-    borderRadius: "12px",
-    background: "#fff",
-    color: "#0f172a",
-    padding: "12px 16px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  reviewedBadge: {
-    padding: "10px 14px",
-    borderRadius: "999px",
-    background: "#e0f2fe",
-    color: "#075985",
-    fontWeight: 700,
+  noteText: {
+    margin: "10px 0 0",
+    color: "#34506e",
+    lineHeight: 1.7,
   },
   reviewPanel: {
     marginTop: "18px",
-    borderTop: "1px solid #e2e8f0",
     paddingTop: "18px",
+    borderTop: "1px solid rgba(147, 170, 193, 0.18)",
     display: "grid",
     gap: "12px",
   },
-  fieldRow: {
+  formRow: {
     display: "grid",
     gap: "8px",
-  },
-  select: {
-    width: "100%",
-    maxWidth: "120px",
-    padding: "10px",
-    borderRadius: "10px",
-    border: "1px solid #cbd5e1",
-  },
-  textarea: {
-    width: "100%",
-    minHeight: "90px",
-    borderRadius: "14px",
-    border: "1px solid #cbd5e1",
-    padding: "12px",
-    resize: "vertical",
+    maxWidth: "220px",
   },
 };
+
+export default MyAppointmentsPage;

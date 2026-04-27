@@ -1,16 +1,23 @@
 import { useEffect, useState } from "react";
+import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
+import { createAutoGrid, createHero, gradients, ui } from "../styles/designSystem";
 
 function MyReviewsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
 
+  usePageMeta(
+    "Đánh giá của tôi",
+    "Xem lại phản hồi và số sao đã gửi cho bác sĩ sau mỗi lần thăm khám.",
+  );
+
   useEffect(() => {
     api
       .get("/api/patient/reviews")
-      .then((res) => {
-        setItems(res.data?.data || []);
+      .then((response) => {
+        setItems(response.data?.data || []);
       })
       .catch((error) => {
         setErrorText(getErrorMessage(error, "Không tải được đánh giá."));
@@ -19,30 +26,38 @@ function MyReviewsPage() {
   }, []);
 
   return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>My Reviews</h2>
-        <p style={styles.subtitle}>Các đánh giá bạn đã gửi cho bác sĩ sau khi khám.</p>
-      </div>
+    <div style={ui.page}>
+      <section style={createHero(gradients.patient)}>
+        <div style={ui.eyebrow}>Phản hồi dịch vụ</div>
+        <h1 style={ui.title}>Lưu lại trải nghiệm khám bệnh và phản hồi cho bác sĩ</h1>
+        <p style={ui.subtitle}>
+          Các đánh giá sau buổi khám được hiển thị tập trung để bạn thuận tiện theo
+          dõi trải nghiệm sử dụng dịch vụ tại phòng khám.
+        </p>
+      </section>
 
-      {loading && <div style={styles.stateCard}>Đang tải đánh giá...</div>}
-      {!loading && errorText && <div style={styles.errorCard}>{errorText}</div>}
+      {loading && <div style={ui.stateCard}>Đang tải đánh giá...</div>}
+      {!loading && errorText && <div style={ui.errorCard}>{errorText}</div>}
       {!loading && !errorText && items.length === 0 && (
-        <div style={styles.stateCard}>Bạn chưa gửi đánh giá nào.</div>
+        <div style={ui.stateCard}>Bạn chưa gửi đánh giá nào.</div>
       )}
 
       {!loading && !errorText && items.length > 0 && (
-        <div style={styles.list}>
+        <div style={createAutoGrid(320)}>
           {items.map((item) => (
-            <div key={item.id} style={styles.card}>
+            <article key={item.id} style={ui.card}>
               <div style={styles.topRow}>
-                <h3 style={{ margin: 0 }}>{item.doctorName}</h3>
-                <div style={styles.rating}>{item.rating}/5</div>
+                <div>
+                  <h3 style={styles.cardTitle}>{item.doctorName}</h3>
+                  <p style={styles.meta}>Lịch hẹn #{item.appointmentId}</p>
+                </div>
+                <div style={styles.ratingBadge}>{item.rating}/5</div>
               </div>
-              <p style={styles.meta}>Appointment #{item.appointmentId}</p>
-              <p style={styles.comment}>{item.comment}</p>
-              <p style={styles.time}>{item.createdAt}</p>
-            </div>
+              <p style={styles.comment}>
+                {item.comment || "Không có nội dung đánh giá."}
+              </p>
+              <div style={styles.footer}>{item.createdAt}</div>
+            </article>
           ))}
         </div>
       )}
@@ -50,74 +65,44 @@ function MyReviewsPage() {
   );
 }
 
-export default MyReviewsPage;
-
 const styles = {
-  page: {
-    display: "grid",
-    gap: "20px",
-  },
-  header: {
-    background: "#fff",
-    borderRadius: "20px",
-    padding: "24px",
-    boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)",
-  },
-  title: {
-    margin: 0,
-  },
-  subtitle: {
-    margin: "10px 0 0",
-    color: "#64748b",
-  },
-  stateCard: {
-    background: "#fff",
-    borderRadius: "18px",
-    padding: "18px",
-  },
-  errorCard: {
-    background: "#fff1f2",
-    color: "#9f1239",
-    borderRadius: "18px",
-    padding: "18px",
-    border: "1px solid #fecdd3",
-  },
-  list: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "18px",
-  },
-  card: {
-    background: "#fff",
-    borderRadius: "18px",
-    padding: "22px",
-    boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)",
-  },
   topRow: {
     display: "flex",
     justifyContent: "space-between",
-    gap: "12px",
-    alignItems: "center",
+    gap: "16px",
+    alignItems: "flex-start",
   },
-  rating: {
-    padding: "8px 12px",
-    borderRadius: "999px",
-    background: "#fef3c7",
-    color: "#92400e",
-    fontWeight: 700,
+  cardTitle: {
+    margin: 0,
+    color: "#16324f",
+    fontSize: "24px",
   },
   meta: {
-    margin: "10px 0 0",
-    color: "#64748b",
+    margin: "8px 0 0",
+    color: "#5c7894",
+    fontWeight: 600,
+  },
+  ratingBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: "76px",
+    padding: "10px 14px",
+    borderRadius: "999px",
+    background: "#e8f2ff",
+    color: "#0f4c81",
+    fontWeight: 800,
   },
   comment: {
-    margin: "14px 0 0",
-    color: "#0f172a",
-    lineHeight: 1.5,
+    margin: "18px 0 0",
+    color: "#34506e",
+    lineHeight: 1.75,
   },
-  time: {
-    margin: "16px 0 0",
-    color: "#94a3b8",
+  footer: {
+    marginTop: "18px",
+    color: "#7a8fa6",
     fontSize: "13px",
   },
 };
+
+export default MyReviewsPage;

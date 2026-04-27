@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
+import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
+import { createAutoGrid, createHero, gradients, ui } from "../styles/designSystem";
 
 const emptySpecialtyForm = { name: "", description: "", active: true };
-const emptyMedicineForm = { name: "", unit: "", stockQuantity: "", price: "", description: "", active: true };
+const emptyMedicineForm = {
+  name: "",
+  unit: "",
+  stockQuantity: "",
+  price: "",
+  description: "",
+  active: true,
+};
 
 function AdminCatalogPage() {
   const [specialties, setSpecialties] = useState([]);
@@ -11,6 +20,11 @@ function AdminCatalogPage() {
   const [medicineForm, setMedicineForm] = useState(emptyMedicineForm);
   const [editingSpecialtyId, setEditingSpecialtyId] = useState(null);
   const [editingMedicineId, setEditingMedicineId] = useState(null);
+
+  usePageMeta(
+    "Danh mục hệ thống",
+    "Quản lý danh mục chuyên khoa và thuốc cho toàn bộ hệ thống phòng khám ClinicMS.",
+  );
 
   useEffect(() => {
     loadData();
@@ -25,7 +39,7 @@ function AdminCatalogPage() {
       setSpecialties(specialtyRes.data?.data || []);
       setMedicines(medicineRes.data?.data || []);
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to load admin catalog"));
+      alert(getErrorMessage(error, "Không tải được dữ liệu danh mục."));
     }
   };
 
@@ -34,16 +48,16 @@ function AdminCatalogPage() {
     try {
       if (editingSpecialtyId) {
         await api.put(`/api/admin/specialties/${editingSpecialtyId}`, specialtyForm);
-        alert("Specialty updated successfully");
+        alert("Cập nhật chuyên khoa thành công.");
       } else {
         await api.post("/api/admin/specialties", specialtyForm);
-        alert("Specialty created successfully");
+        alert("Tạo chuyên khoa thành công.");
       }
       setSpecialtyForm(emptySpecialtyForm);
       setEditingSpecialtyId(null);
       await loadData();
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to save specialty"));
+      alert(getErrorMessage(error, "Lưu chuyên khoa thất bại."));
     }
   };
 
@@ -52,104 +66,136 @@ function AdminCatalogPage() {
     try {
       const payload = {
         ...medicineForm,
-        stockQuantity: medicineForm.stockQuantity === "" ? null : Number(medicineForm.stockQuantity),
+        stockQuantity:
+          medicineForm.stockQuantity === "" ? null : Number(medicineForm.stockQuantity),
       };
       if (editingMedicineId) {
         await api.put(`/api/admin/medicines/${editingMedicineId}`, payload);
-        alert("Medicine updated successfully");
+        alert("Cập nhật thuốc thành công.");
       } else {
         await api.post("/api/admin/medicines", payload);
-        alert("Medicine created successfully");
+        alert("Tạo thuốc thành công.");
       }
       setMedicineForm(emptyMedicineForm);
       setEditingMedicineId(null);
       await loadData();
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to save medicine"));
+      alert(getErrorMessage(error, "Lưu thuốc thất bại."));
     }
   };
 
   const deleteSpecialty = async (id) => {
-    if (!window.confirm("Delete this specialty?")) return;
+    if (!window.confirm("Bạn có chắc muốn xóa chuyên khoa này?")) return;
     try {
       await api.delete(`/api/admin/specialties/${id}`);
       await loadData();
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to delete specialty"));
+      alert(getErrorMessage(error, "Xóa chuyên khoa thất bại."));
     }
   };
 
   const deleteMedicine = async (id) => {
-    if (!window.confirm("Delete this medicine?")) return;
+    if (!window.confirm("Bạn có chắc muốn xóa thuốc này?")) return;
     try {
       await api.delete(`/api/admin/medicines/${id}`);
       await loadData();
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to delete medicine"));
+      alert(getErrorMessage(error, "Xóa thuốc thất bại."));
     }
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.hero}>
-        <div>
-          <div style={styles.eyebrow}>ADMIN CATALOG</div>
-          <h1 style={styles.title}>Manage Specialties And Medicines</h1>
-          <p style={styles.subtitle}>
-            Admin features 2 and 3: CRUD for specialty catalog and medicine catalog.
-          </p>
-        </div>
-      </div>
+    <div style={ui.page}>
+      <section style={createHero(gradients.admin)}>
+        <div style={ui.eyebrow}>Danh mục nền tảng</div>
+        <h1 style={ui.title}>Quản lý chuyên khoa và kho thuốc theo cùng một chuẩn giao diện</h1>
+        <p style={ui.subtitle}>
+          Đây là dữ liệu nền dùng xuyên suốt cho hồ sơ bác sĩ, kê đơn thuốc và vận hành
+          toàn bộ hệ thống phòng khám.
+        </p>
+      </section>
 
       <div style={styles.grid}>
-        <section style={styles.panel}>
-          <h2 style={styles.sectionTitle}>Specialties</h2>
+        <section style={ui.panel}>
+          <div style={styles.sectionHead}>
+            <h2 style={ui.sectionTitle}>Chuyên khoa</h2>
+            <p style={ui.sectionHint}>Tạo và duy trì các chuyên khoa dùng cho hồ sơ bác sĩ.</p>
+          </div>
+
           <form onSubmit={submitSpecialty} style={styles.form}>
             <input
               name="name"
               value={specialtyForm.name}
-              onChange={(e) => setSpecialtyForm((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="Specialty name"
-              style={styles.input}
+              onChange={(event) =>
+                setSpecialtyForm((prev) => ({ ...prev, name: event.target.value }))
+              }
+              placeholder="Tên chuyên khoa"
+              style={ui.input}
             />
             <textarea
               name="description"
               value={specialtyForm.description}
-              onChange={(e) => setSpecialtyForm((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Description"
-              style={styles.textarea}
+              onChange={(event) =>
+                setSpecialtyForm((prev) => ({ ...prev, description: event.target.value }))
+              }
+              placeholder="Mô tả chuyên khoa"
+              style={ui.textarea}
             />
-            <label style={styles.checkboxRow}>
+            <label style={ui.checkboxRow}>
               <input
                 type="checkbox"
                 checked={specialtyForm.active}
-                onChange={(e) => setSpecialtyForm((prev) => ({ ...prev, active: e.target.checked }))}
+                onChange={(event) =>
+                  setSpecialtyForm((prev) => ({ ...prev, active: event.target.checked }))
+                }
               />
-              Active specialty
+              Kích hoạt chuyên khoa
             </label>
-            <div style={styles.actionRow}>
-              <button type="submit" style={styles.primaryButton}>
-                {editingSpecialtyId ? "Update Specialty" : "Create Specialty"}
+            <div style={ui.actionRow}>
+              <button type="submit" style={ui.primaryButton}>
+                {editingSpecialtyId ? "Cập nhật chuyên khoa" : "Tạo chuyên khoa"}
               </button>
               {editingSpecialtyId ? (
-                <button type="button" onClick={() => { setEditingSpecialtyId(null); setSpecialtyForm(emptySpecialtyForm); }} style={styles.secondaryButton}>
-                  Cancel
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSpecialtyId(null);
+                    setSpecialtyForm(emptySpecialtyForm);
+                  }}
+                  style={ui.secondaryButton}
+                >
+                  Hủy
                 </button>
               ) : null}
             </div>
           </form>
 
-          <div style={styles.cardStack}>
+          <div style={{ display: "grid", gap: "12px" }}>
             {specialties.map((specialty) => (
-              <div key={specialty.id} style={styles.listCard}>
-                <strong>{specialty.name}</strong>
-                <p style={styles.listText}>{specialty.description || "No description"}</p>
-                <div style={styles.actionRow}>
-                  <button type="button" onClick={() => { setEditingSpecialtyId(specialty.id); setSpecialtyForm({ name: specialty.name || "", description: specialty.description || "", active: specialty.active ?? true }); }} style={styles.primaryButton}>
-                    Edit
+              <div key={specialty.id} style={ui.listCard}>
+                <strong style={styles.itemTitle}>{specialty.name}</strong>
+                <p style={styles.itemText}>{specialty.description || "Chưa có mô tả."}</p>
+                <div style={ui.actionRow}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingSpecialtyId(specialty.id);
+                      setSpecialtyForm({
+                        name: specialty.name || "",
+                        description: specialty.description || "",
+                        active: specialty.active ?? true,
+                      });
+                    }}
+                    style={ui.primaryButton}
+                  >
+                    Chỉnh sửa
                   </button>
-                  <button type="button" onClick={() => deleteSpecialty(specialty.id)} style={styles.dangerButton}>
-                    Delete
+                  <button
+                    type="button"
+                    onClick={() => deleteSpecialty(specialty.id)}
+                    style={ui.dangerButton}
+                  >
+                    Xóa
                   </button>
                 </div>
               </div>
@@ -157,51 +203,67 @@ function AdminCatalogPage() {
           </div>
         </section>
 
-        <section style={styles.panel}>
-          <h2 style={styles.sectionTitle}>Medicines</h2>
+        <section style={ui.panel}>
+          <div style={styles.sectionHead}>
+            <h2 style={ui.sectionTitle}>Thuốc</h2>
+            <p style={ui.sectionHint}>Quản lý danh mục thuốc và số lượng tồn phục vụ kê đơn.</p>
+          </div>
+
           <form onSubmit={submitMedicine} style={styles.form}>
-            <div style={styles.formGrid}>
-              <input name="name" value={medicineForm.name} onChange={(e) => setMedicineForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Medicine name" style={styles.input} />
-              <input name="unit" value={medicineForm.unit} onChange={(e) => setMedicineForm((prev) => ({ ...prev, unit: e.target.value }))} placeholder="Unit" style={styles.input} />
-              <input name="stockQuantity" value={medicineForm.stockQuantity} onChange={(e) => setMedicineForm((prev) => ({ ...prev, stockQuantity: e.target.value }))} placeholder="Stock quantity" style={styles.input} />
-              <input name="price" value={medicineForm.price} onChange={(e) => setMedicineForm((prev) => ({ ...prev, price: e.target.value }))} placeholder="Price" style={styles.input} />
+            <div style={createAutoGrid(160)}>
+              <input name="name" value={medicineForm.name} onChange={(event) => setMedicineForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Tên thuốc" style={ui.input} />
+              <input name="unit" value={medicineForm.unit} onChange={(event) => setMedicineForm((prev) => ({ ...prev, unit: event.target.value }))} placeholder="Đơn vị" style={ui.input} />
+              <input name="stockQuantity" value={medicineForm.stockQuantity} onChange={(event) => setMedicineForm((prev) => ({ ...prev, stockQuantity: event.target.value }))} placeholder="Số lượng tồn" style={ui.input} />
+              <input name="price" value={medicineForm.price} onChange={(event) => setMedicineForm((prev) => ({ ...prev, price: event.target.value }))} placeholder="Giá" style={ui.input} />
             </div>
             <textarea
               name="description"
               value={medicineForm.description}
-              onChange={(e) => setMedicineForm((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Description"
-              style={styles.textarea}
+              onChange={(event) =>
+                setMedicineForm((prev) => ({ ...prev, description: event.target.value }))
+              }
+              placeholder="Mô tả thuốc"
+              style={ui.textarea}
             />
-            <label style={styles.checkboxRow}>
+            <label style={ui.checkboxRow}>
               <input
                 type="checkbox"
                 checked={medicineForm.active}
-                onChange={(e) => setMedicineForm((prev) => ({ ...prev, active: e.target.checked }))}
+                onChange={(event) =>
+                  setMedicineForm((prev) => ({ ...prev, active: event.target.checked }))
+                }
               />
-              Active medicine
+              Kích hoạt thuốc
             </label>
-            <div style={styles.actionRow}>
-              <button type="submit" style={styles.primaryButton}>
-                {editingMedicineId ? "Update Medicine" : "Create Medicine"}
+            <div style={ui.actionRow}>
+              <button type="submit" style={ui.primaryButton}>
+                {editingMedicineId ? "Cập nhật thuốc" : "Tạo thuốc"}
               </button>
               {editingMedicineId ? (
-                <button type="button" onClick={() => { setEditingMedicineId(null); setMedicineForm(emptyMedicineForm); }} style={styles.secondaryButton}>
-                  Cancel
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingMedicineId(null);
+                    setMedicineForm(emptyMedicineForm);
+                  }}
+                  style={ui.secondaryButton}
+                >
+                  Hủy
                 </button>
               ) : null}
             </div>
           </form>
 
-          <div style={styles.cardStack}>
+          <div style={{ display: "grid", gap: "12px" }}>
             {medicines.map((medicine) => (
-              <div key={medicine.id} style={styles.listCard}>
-                <strong>{medicine.name}</strong>
-                <p style={styles.listText}>
-                  {medicine.unit || "N/A"} | stock {medicine.stockQuantity ?? 0} | price {medicine.price || "N/A"}
+              <div key={medicine.id} style={ui.listCard}>
+                <strong style={styles.itemTitle}>{medicine.name}</strong>
+                <p style={styles.itemText}>
+                  {medicine.unit || "Chưa có đơn vị"} | tồn kho {medicine.stockQuantity ?? 0} | giá{" "}
+                  {medicine.price || "Chưa cập nhật"}
                 </p>
-                <p style={styles.listText}>{medicine.description || "No description"}</p>
-                <div style={styles.actionRow}>
+                <p style={styles.itemText}>{medicine.description || "Chưa có mô tả."}</p>
+                <div style={ui.actionRow}>
                   <button
                     type="button"
                     onClick={() => {
@@ -215,12 +277,16 @@ function AdminCatalogPage() {
                         active: medicine.active ?? true,
                       });
                     }}
-                    style={styles.primaryButton}
+                    style={ui.primaryButton}
                   >
-                    Edit
+                    Chỉnh sửa
                   </button>
-                  <button type="button" onClick={() => deleteMedicine(medicine.id)} style={styles.dangerButton}>
-                    Delete
+                  <button
+                    type="button"
+                    onClick={() => deleteMedicine(medicine.id)}
+                    style={ui.dangerButton}
+                  >
+                    Xóa
                   </button>
                 </div>
               </div>
@@ -232,27 +298,29 @@ function AdminCatalogPage() {
   );
 }
 
-export default AdminCatalogPage;
-
 const styles = {
-  page: { display: "grid", gap: "24px" },
-  hero: { background: "linear-gradient(135deg, #0f172a, #155e75)", color: "#fff", borderRadius: "28px", padding: "34px" },
-  eyebrow: { display: "inline-flex", borderRadius: "999px", background: "rgba(255,255,255,0.15)", padding: "8px 12px", fontSize: "12px", fontWeight: 800, letterSpacing: "0.08em" },
-  title: { margin: "16px 0 0", fontSize: "36px" },
-  subtitle: { margin: "14px 0 0", maxWidth: "760px", color: "#dbeafe", lineHeight: 1.6 },
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "20px" },
-  panel: { background: "#fff", borderRadius: "24px", padding: "22px", boxShadow: "0 14px 32px rgba(15, 23, 42, 0.08)", display: "grid", gap: "18px" },
-  sectionTitle: { margin: 0, color: "#0f172a" },
-  form: { display: "grid", gap: "12px" },
-  formGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px" },
-  input: { width: "100%", border: "1px solid #cbd5e1", borderRadius: "12px", padding: "12px 14px", fontSize: "14px", background: "#fff" },
-  textarea: { width: "100%", minHeight: "100px", border: "1px solid #cbd5e1", borderRadius: "12px", padding: "12px 14px", fontSize: "14px", resize: "vertical", background: "#fff" },
-  checkboxRow: { display: "flex", alignItems: "center", gap: "10px", color: "#0f172a", fontWeight: 600 },
-  actionRow: { display: "flex", gap: "10px", flexWrap: "wrap" },
-  cardStack: { display: "grid", gap: "12px" },
-  listCard: { border: "1px solid #dbeafe", borderRadius: "16px", padding: "14px", display: "grid", gap: "10px" },
-  listText: { margin: 0, color: "#475569", lineHeight: 1.5 },
-  primaryButton: { border: "none", borderRadius: "12px", background: "#0f766e", color: "#fff", padding: "12px 16px", fontWeight: 800, cursor: "pointer" },
-  secondaryButton: { border: "1px solid #cbd5e1", borderRadius: "12px", background: "#fff", color: "#0f172a", padding: "12px 16px", fontWeight: 700, cursor: "pointer" },
-  dangerButton: { border: "none", borderRadius: "12px", background: "#dc2626", color: "#fff", padding: "12px 16px", fontWeight: 800, cursor: "pointer" },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+    gap: "20px",
+  },
+  sectionHead: {
+    display: "grid",
+    gap: "6px",
+  },
+  form: {
+    display: "grid",
+    gap: "14px",
+  },
+  itemTitle: {
+    color: "#16324f",
+    fontSize: "18px",
+  },
+  itemText: {
+    margin: "6px 0 0",
+    color: "#5c7894",
+    lineHeight: 1.6,
+  },
 };
+
+export default AdminCatalogPage;

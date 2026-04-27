@@ -13,84 +13,122 @@ function MainLayout() {
   };
 
   const patientLinks = [
-    { to: "/", label: "Home" },
-    { to: "/doctors", label: "Book" },
-    { to: "/appointments", label: "Appointments" },
-    { to: "/medical-records", label: "History" },
-    { to: "/prescriptions", label: "Prescriptions" },
-    { to: "/test-results", label: "Tests" },
-    { to: "/reviews", label: "Reviews" },
+    { to: "/", label: "Trang chủ" },
+    { to: "/doctors", label: "Đặt lịch khám" },
+    { to: "/appointments", label: "Lịch hẹn" },
+    { to: "/medical-records", label: "Lịch sử khám" },
+    { to: "/prescriptions", label: "Đơn thuốc" },
+    { to: "/test-results", label: "Xét nghiệm" },
+    { to: "/reviews", label: "Đánh giá" },
   ];
 
   const doctorLinks = [
-    { to: "/", label: "Home" },
-    { to: "/doctor/workspace", label: "Workspace" },
-    { to: "/doctor/profile", label: "Profile" },
+    { to: "/", label: "Trang chủ" },
+    { to: "/doctor/workspace", label: "Lịch làm việc" },
+    { to: "/doctor/profile", label: "Hồ sơ bác sĩ" },
   ];
 
   const adminLinks = [
-    { to: "/", label: "Home" },
-    { to: "/admin/doctors", label: "Doctors" },
-    { to: "/admin/catalog", label: "Catalog" },
-    { to: "/admin/operations", label: "Operations" },
+    { to: "/", label: "Trang chủ" },
+    { to: "/admin/doctors", label: "Quản lý bác sĩ" },
+    { to: "/admin/catalog", label: "Danh mục" },
+    { to: "/admin/operations", label: "Vận hành" },
   ];
 
   const links =
     role === "DOCTOR" ? doctorLinks : role === "ADMIN" ? adminLinks : patientLinks;
 
+  const roleLabel =
+    role === "DOCTOR" ? "Bác sĩ" : role === "ADMIN" ? "Quản trị viên" : "Bệnh nhân";
+
   return (
-    <div style={{ minHeight: "100vh", background: "#eef2ff" }}>
-      <div style={styles.navbar}>
-        <div onClick={() => navigate("/")} style={styles.brand}>
-          ClinicMS
+    <div style={styles.pageShell}>
+      <div style={styles.topbar}>
+        <div style={styles.topbarWrap}>
+          <span>Hotline: 1900 6868</span>
+          <span>Thời gian làm việc: 07:00 - 19:00</span>
+          <span>Đặt lịch và quản lý hồ sơ khám trực tuyến</span>
         </div>
+      </div>
 
-        {user && (
-          <div style={styles.linkWrap}>
-            {links.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                style={({ isActive }) => ({
-                  ...styles.link,
-                  background: isActive ? "#dbeafe" : "transparent",
-                  color: isActive ? "#0f172a" : "#475569",
-                })}
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </div>
-        )}
+      <header style={styles.header}>
+        <div style={styles.headerInner}>
+          <button type="button" onClick={() => navigate("/")} style={styles.brandButton}>
+            <span style={styles.brandMark}>+</span>
+            <span>
+              <span style={styles.brandName}>ClinicMS</span>
+              <span style={styles.brandTag}>Hệ thống quản lý phòng khám hiện đại</span>
+            </span>
+          </button>
 
-        <div style={styles.authWrap}>
-          {!user ? (
-            <>
-              <button onClick={() => navigate("/login")} style={styles.ghostButton}>
-                Login
-              </button>
-              <button onClick={() => navigate("/register")} style={styles.primaryButton}>
-                Register
-              </button>
-            </>
+          {user ? (
+            <nav style={styles.navWrap}>
+              {links.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  style={({ isActive }) => ({
+                    ...styles.navLink,
+                    background: isActive ? "#edf4ff" : "transparent",
+                    color: isActive ? "#0f4c81" : "#47627d",
+                    borderColor: isActive ? "rgba(15, 76, 129, 0.16)" : "transparent",
+                  })}
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+            </nav>
           ) : (
-            <>
-              <div style={styles.avatar}>{user.username?.charAt(0).toUpperCase()}</div>
-              <div>
-                <div style={styles.userName}>{user.username}</div>
-                <div style={styles.userRole}>{role}</div>
-              </div>
-              <button onClick={handleLogout} style={styles.ghostButton}>
-                Logout
-              </button>
-            </>
+            <div style={styles.welcomeText}>
+              Cổng thông tin dành cho bệnh nhân, bác sĩ và quản trị viên trong cùng một hệ thống.
+            </div>
           )}
-        </div>
-      </div>
 
-      <div style={{ padding: "30px" }}>
+          <div style={styles.authWrap}>
+            {!user ? (
+              <>
+                <button onClick={() => navigate("/login")} style={styles.ghostButton}>
+                  Đăng nhập
+                </button>
+                <button onClick={() => navigate("/register")} style={styles.primaryButton}>
+                  Tạo tài khoản
+                </button>
+              </>
+            ) : (
+              <div style={styles.userCard}>
+                <div style={styles.avatar}>{user.username?.charAt(0).toUpperCase()}</div>
+                <div style={styles.userMeta}>
+                  <div style={styles.userName}>{user.fullName || user.username}</div>
+                  <div style={styles.userRole}>{roleLabel}</div>
+                </div>
+                <button onClick={handleLogout} style={styles.ghostButton}>
+                  Đăng xuất
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main style={styles.main}>
         <Outlet />
-      </div>
+      </main>
+
+      <footer style={styles.footer}>
+        <div style={styles.footerInner}>
+          <div>
+            <strong style={styles.footerBrand}>ClinicMS</strong>
+            <p style={styles.footerText}>
+              Nền tảng quản lý phòng khám theo phong cách y tế hiện đại, giúp tối ưu trải nghiệm bệnh nhân và vận hành nội bộ.
+            </p>
+          </div>
+          <div style={styles.footerMeta}>
+            <span>Đặt lịch trực tuyến</span>
+            <span>Đơn thuốc điện tử</span>
+            <span>Kết quả xét nghiệm online</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -98,81 +136,184 @@ function MainLayout() {
 export default MainLayout;
 
 const styles = {
-  navbar: {
-    minHeight: "74px",
-    background: "rgba(255,255,255,0.88)",
-    backdropFilter: "blur(10px)",
-    borderBottom: "1px solid #dbeafe",
+  pageShell: {
+    minHeight: "100vh",
+    position: "relative",
+  },
+  topbar: {
+    background: "#0f4c81",
+    color: "rgba(255,255,255,0.88)",
+    fontSize: "13px",
+  },
+  topbarWrap: {
+    maxWidth: "1320px",
+    margin: "0 auto",
+    padding: "10px 18px",
     display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "14px 26px",
     gap: "18px",
     flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  header: {
     position: "sticky",
     top: 0,
-    zIndex: 20,
+    zIndex: 40,
+    background: "rgba(243, 248, 252, 0.92)",
+    backdropFilter: "blur(14px)",
+    borderBottom: "1px solid rgba(147, 170, 193, 0.16)",
   },
-  brand: {
+  headerInner: {
+    maxWidth: "1320px",
+    margin: "0 auto",
+    padding: "18px",
+    display: "grid",
+    gridTemplateColumns: "auto 1fr auto",
+    gap: "16px",
+    alignItems: "center",
+  },
+  brandButton: {
+    border: "none",
+    background: "transparent",
+    padding: 0,
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    cursor: "pointer",
+    color: "#16324f",
+  },
+  brandMark: {
+    width: "46px",
+    height: "46px",
+    borderRadius: "16px",
+    display: "grid",
+    placeItems: "center",
+    background: "linear-gradient(135deg, #0f4c81, #4f8fcf)",
+    color: "#fff",
+    fontWeight: 800,
+    fontSize: "24px",
+    boxShadow: "0 12px 22px rgba(15, 76, 129, 0.22)",
+  },
+  brandName: {
+    display: "block",
     fontSize: "22px",
     fontWeight: 800,
-    color: "#0f172a",
-    cursor: "pointer",
+    letterSpacing: "-0.02em",
   },
-  linkWrap: {
+  brandTag: {
+    display: "block",
+    marginTop: "2px",
+    color: "#6b8198",
+    fontSize: "12px",
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
+  },
+  navWrap: {
     display: "flex",
+    justifyContent: "center",
     gap: "8px",
     flexWrap: "wrap",
+    minWidth: 0,
   },
-  link: {
-    textDecoration: "none",
-    borderRadius: "999px",
+  navLink: {
     padding: "10px 14px",
-    fontWeight: 600,
+    borderRadius: "999px",
+    border: "1px solid transparent",
+    fontWeight: 700,
+    fontSize: "14px",
+    textDecoration: "none",
+  },
+  welcomeText: {
+    color: "#5f758d",
+    lineHeight: 1.5,
+    textAlign: "center",
+    fontSize: "14px",
   },
   authWrap: {
     display: "flex",
+    justifyContent: "flex-end",
+  },
+  userCard: {
+    display: "flex",
     alignItems: "center",
-    gap: "10px",
-    flexWrap: "wrap",
+    gap: "12px",
+  },
+  avatar: {
+    width: "44px",
+    height: "44px",
+    borderRadius: "50%",
+    background: "#dceeff",
+    color: "#0f4c81",
+    display: "grid",
+    placeItems: "center",
+    fontWeight: 800,
+    border: "1px solid rgba(15, 76, 129, 0.14)",
+  },
+  userMeta: {
+    minWidth: "122px",
+  },
+  userName: {
+    fontWeight: 800,
+    color: "#16324f",
+  },
+  userRole: {
+    color: "#6c8299",
+    fontSize: "12px",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
   },
   ghostButton: {
-    border: "1px solid #cbd5e1",
+    border: "1px solid rgba(147, 170, 193, 0.28)",
     borderRadius: "999px",
     background: "#fff",
-    color: "#0f172a",
-    padding: "10px 14px",
-    fontWeight: 600,
+    color: "#14304a",
+    padding: "10px 16px",
+    fontWeight: 700,
     cursor: "pointer",
   },
   primaryButton: {
     border: "none",
     borderRadius: "999px",
-    background: "#0f766e",
+    background: "#0f4c81",
     color: "#fff",
-    padding: "10px 14px",
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-  avatar: {
-    width: "38px",
-    height: "38px",
-    borderRadius: "50%",
-    background: "#0f766e",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    padding: "10px 18px",
     fontWeight: 800,
+    cursor: "pointer",
+    boxShadow: "0 12px 24px rgba(15, 76, 129, 0.16)",
   },
-  userName: {
-    fontWeight: 700,
-    color: "#0f172a",
+  main: {
+    maxWidth: "1320px",
+    margin: "0 auto",
+    padding: "32px 18px 48px",
   },
-  userRole: {
-    color: "#64748b",
-    fontSize: "12px",
-    textTransform: "uppercase",
-    letterSpacing: "0.08em",
+  footer: {
+    marginTop: "24px",
+    borderTop: "1px solid rgba(147, 170, 193, 0.16)",
+    background: "rgba(255,255,255,0.5)",
+  },
+  footerInner: {
+    maxWidth: "1320px",
+    margin: "0 auto",
+    padding: "26px 18px 36px",
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr) auto",
+    gap: "20px",
+    alignItems: "center",
+  },
+  footerBrand: {
+    color: "#16324f",
+    fontSize: "18px",
+  },
+  footerText: {
+    margin: "10px 0 0",
+    color: "#5f758d",
+    lineHeight: 1.7,
+    maxWidth: "720px",
+  },
+  footerMeta: {
+    display: "grid",
+    gap: "10px",
+    color: "#6c8299",
+    textAlign: "right",
+    fontWeight: 600,
   },
 };

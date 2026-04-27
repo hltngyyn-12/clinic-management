@@ -1,16 +1,29 @@
 import { useEffect, useState } from "react";
+import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
+import {
+  createAutoGrid,
+  createHero,
+  createStatusPill,
+  gradients,
+  ui,
+} from "../styles/designSystem";
 
 function TestResultsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
 
+  usePageMeta(
+    "Kết quả xét nghiệm",
+    "Theo dõi yêu cầu xét nghiệm, trạng thái xử lý và nội dung kết luận trực tuyến.",
+  );
+
   useEffect(() => {
     api
       .get("/api/patient/test-results")
-      .then((res) => {
-        setItems(res.data?.data || []);
+      .then((response) => {
+        setItems(response.data?.data || []);
       })
       .catch((error) => {
         setErrorText(getErrorMessage(error, "Không tải được kết quả xét nghiệm."));
@@ -19,37 +32,60 @@ function TestResultsPage() {
   }, []);
 
   return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>Test Results</h2>
-        <p style={styles.subtitle}>Theo dõi yêu cầu xét nghiệm và kết quả online.</p>
-      </div>
+    <div style={ui.page}>
+      <section style={createHero(gradients.patient)}>
+        <div style={ui.eyebrow}>Xét nghiệm trực tuyến</div>
+        <h1 style={ui.title}>Theo dõi trạng thái xét nghiệm và kết luận trên hệ thống</h1>
+        <p style={ui.subtitle}>
+          Kết quả xét nghiệm được cập nhật theo từng hồ sơ khám, giúp bạn nắm nhanh
+          tiến độ xử lý và nội dung kết luận của bác sĩ.
+        </p>
+      </section>
 
-      {loading && <div style={styles.stateCard}>Đang tải dữ liệu xét nghiệm...</div>}
-      {!loading && errorText && <div style={styles.errorCard}>{errorText}</div>}
+      {loading && <div style={ui.stateCard}>Đang tải dữ liệu xét nghiệm...</div>}
+      {!loading && errorText && <div style={ui.errorCard}>{errorText}</div>}
       {!loading && !errorText && items.length === 0 && (
-        <div style={styles.stateCard}>Chưa có dữ liệu xét nghiệm.</div>
+        <div style={ui.stateCard}>Bạn chưa có dữ liệu xét nghiệm nào.</div>
       )}
 
       {!loading && !errorText && items.length > 0 && (
-        <div style={styles.list}>
+        <div style={createAutoGrid(320)}>
           {items.map((item) => (
-            <div key={item.testRequestId} style={styles.card}>
-              <div style={styles.badge(item.status)}>{item.status}</div>
-              <h3 style={styles.cardTitle}>{item.testName}</h3>
-              <p style={styles.meta}>Doctor: {item.doctorName}</p>
-              <p style={styles.meta}>Medical Record: #{item.medicalRecordId}</p>
-
-              <div style={styles.section}>
-                <strong>Result</strong>
-                <p style={styles.paragraph}>{item.result}</p>
+            <article key={item.testRequestId} style={ui.card}>
+              <div style={styles.topRow}>
+                <div>
+                  <h3 style={styles.cardTitle}>{item.testName}</h3>
+                  <p style={styles.meta}>Bác sĩ: {item.doctorName}</p>
+                </div>
+                <div
+                  style={createStatusPill(
+                    item.status === "COMPLETED" ? "success" : "warning",
+                  )}
+                >
+                  {item.status === "COMPLETED"
+                    ? "Đã hoàn thành"
+                    : item.status || "Đang xử lý"}
+                </div>
               </div>
 
-              <div style={styles.section}>
-                <strong>Conclusion</strong>
-                <p style={styles.paragraph}>{item.conclusion}</p>
+              <div style={styles.referenceRow}>
+                <div style={ui.label}>Hồ sơ khám liên quan</div>
+                <div style={styles.referenceValue}>#{item.medicalRecordId}</div>
               </div>
-            </div>
+
+              <div style={styles.resultGrid}>
+                <div style={ui.panelSoft}>
+                  <div style={ui.label}>Kết quả</div>
+                  <p style={styles.resultText}>{item.result || "Đang chờ cập nhật."}</p>
+                </div>
+                <div style={ui.panelSoft}>
+                  <div style={ui.label}>Kết luận</div>
+                  <p style={styles.resultText}>
+                    {item.conclusion || "Đang chờ cập nhật."}
+                  </p>
+                </div>
+              </div>
+            </article>
           ))}
         </div>
       )}
@@ -57,74 +93,42 @@ function TestResultsPage() {
   );
 }
 
-export default TestResultsPage;
-
 const styles = {
-  page: {
-    display: "grid",
-    gap: "20px",
+  topRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "16px",
+    alignItems: "flex-start",
+    marginBottom: "18px",
   },
-  header: {
-    background: "#fff",
-    borderRadius: "20px",
-    padding: "24px",
-    boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)",
-  },
-  title: {
-    margin: 0,
-  },
-  subtitle: {
-    margin: "10px 0 0",
-    color: "#64748b",
-  },
-  stateCard: {
-    background: "#fff",
-    borderRadius: "18px",
-    padding: "18px",
-  },
-  errorCard: {
-    background: "#fff1f2",
-    color: "#9f1239",
-    borderRadius: "18px",
-    padding: "18px",
-    border: "1px solid #fecdd3",
-  },
-  list: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "18px",
-  },
-  card: {
-    background: "#fff",
-    borderRadius: "18px",
-    padding: "22px",
-    boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)",
-  },
-  badge: (status) => ({
-    display: "inline-flex",
-    padding: "6px 10px",
-    borderRadius: "999px",
-    background: status === "COMPLETED" ? "#dcfce7" : "#fef3c7",
-    color: status === "COMPLETED" ? "#166534" : "#92400e",
-    fontWeight: 700,
-    fontSize: "12px",
-    marginBottom: "14px",
-  }),
   cardTitle: {
     margin: 0,
+    color: "#16324f",
+    fontSize: "24px",
   },
   meta: {
-    color: "#64748b",
     margin: "8px 0 0",
+    color: "#5c7894",
+    fontWeight: 600,
   },
-  section: {
-    marginTop: "16px",
-    paddingTop: "14px",
-    borderTop: "1px solid #e2e8f0",
+  referenceRow: {
+    marginBottom: "18px",
   },
-  paragraph: {
-    margin: "8px 0 0",
-    color: "#0f172a",
-    lineHeight: 1.5,
+  referenceValue: {
+    marginTop: "8px",
+    color: "#16324f",
+    fontWeight: 700,
+  },
+  resultGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "16px",
+  },
+  resultText: {
+    margin: "10px 0 0",
+    color: "#34506e",
+    lineHeight: 1.7,
   },
 };
+
+export default TestResultsPage;

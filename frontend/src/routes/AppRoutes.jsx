@@ -11,6 +11,8 @@ import CreateMedicalRecordPage from "../pages/CreateMedicalRecordPage";
 import PrescriptionsPage from "../pages/PrescriptionsPage";
 import TestResultsPage from "../pages/TestResultsPage";
 import MyReviewsPage from "../pages/MyReviewsPage";
+import PaymentResultPage from "../pages/PaymentResultPage";
+import InvoicePage from "../pages/InvoicePage";
 import DoctorWorkspacePage from "../pages/DoctorWorkspacePage";
 import DoctorProfilePage from "../pages/DoctorProfilePage";
 import AdminDoctorsPage from "../pages/AdminDoctorsPage";
@@ -75,7 +77,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="appointments"
             element={
@@ -84,7 +85,22 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
+          <Route
+            path="payment/momo-result"
+            element={
+              <RoleRoute allow={["PATIENT"]}>
+                <PaymentResultPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="invoices/:appointmentId"
+            element={
+              <RoleRoute allow={["PATIENT"]}>
+                <InvoicePage />
+              </RoleRoute>
+            }
+          />
           <Route
             path="medical-records"
             element={
@@ -93,7 +109,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="prescriptions"
             element={
@@ -102,7 +117,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="test-results"
             element={
@@ -111,7 +125,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="reviews"
             element={
@@ -120,7 +133,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="doctor/workspace"
             element={
@@ -129,7 +141,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="doctor/profile"
             element={
@@ -138,7 +149,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="doctor/create-record"
             element={
@@ -147,7 +157,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="admin/doctors"
             element={
@@ -156,7 +165,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="admin/catalog"
             element={
@@ -165,7 +173,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="admin/operations"
             element={
@@ -174,7 +181,6 @@ function AppRoutes() {
               </RoleRoute>
             }
           />
-
           <Route
             path="dashboard"
             element={

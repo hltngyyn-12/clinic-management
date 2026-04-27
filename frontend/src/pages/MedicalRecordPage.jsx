@@ -1,16 +1,23 @@
 import { useEffect, useState } from "react";
+import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
+import { createHero, createStatusPill, gradients, ui } from "../styles/designSystem";
 
 function MedicalRecordPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
 
+  usePageMeta(
+    "Lịch sử khám bệnh",
+    "Tra cứu hồ sơ khám bệnh, chẩn đoán và ghi chú điều trị của các lần thăm khám trước.",
+  );
+
   useEffect(() => {
     api
       .get("/api/patient/medical-history")
-      .then((res) => {
-        setItems(res.data?.data || []);
+      .then((response) => {
+        setItems(response.data?.data || []);
       })
       .catch((error) => {
         setErrorText(getErrorMessage(error, "Không tải được lịch sử khám."));
@@ -19,44 +26,53 @@ function MedicalRecordPage() {
   }, []);
 
   return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>Medical History</h2>
-        <p style={styles.subtitle}>Theo dõi chẩn đoán và ghi chú từ các lần khám trước.</p>
-      </div>
+    <div style={ui.page}>
+      <section style={createHero(gradients.patient)}>
+        <div style={ui.eyebrow}>Hồ sơ điều trị</div>
+        <h1 style={ui.title}>Xem lại chẩn đoán và ghi chú điều trị theo từng lần khám</h1>
+        <p style={ui.subtitle}>
+          Hồ sơ khám bệnh được sắp xếp theo thời gian, giúp bạn nắm nhanh lịch sử
+          điều trị và đối chiếu lại từng buổi thăm khám với bác sĩ.
+        </p>
+      </section>
 
-      {loading && <div style={styles.stateCard}>Đang tải lịch sử khám...</div>}
-      {!loading && errorText && <div style={styles.errorCard}>{errorText}</div>}
+      {loading && <div style={ui.stateCard}>Đang tải lịch sử khám...</div>}
+      {!loading && errorText && <div style={ui.errorCard}>{errorText}</div>}
       {!loading && !errorText && items.length === 0 && (
-        <div style={styles.stateCard}>Chưa có hồ sơ khám nào.</div>
+        <div style={ui.stateCard}>Bạn chưa có hồ sơ khám nào.</div>
       )}
 
       {!loading && !errorText && items.length > 0 && (
-        <div style={styles.timeline}>
+        <div style={{ display: "grid", gap: "18px" }}>
           {items.map((item) => (
-            <div key={item.id} style={styles.card}>
-              <div style={styles.cardTop}>
+            <article key={item.id} style={ui.card}>
+              <div style={styles.topRow}>
                 <div>
-                  <h3 style={{ margin: 0 }}>Record #{item.id}</h3>
-                  <p style={styles.meta}>Doctor: {item.doctorName}</p>
+                  <h3 style={styles.cardTitle}>Hồ sơ #{item.id}</h3>
+                  <p style={styles.meta}>Bác sĩ phụ trách: {item.doctorName}</p>
                 </div>
-                <div style={styles.dateBadge}>{item.createdAt}</div>
+                <div style={createStatusPill("info")}>{item.createdAt}</div>
               </div>
 
-              <div style={styles.section}>
-                <strong>Diagnosis</strong>
-                <p style={styles.text}>{item.diagnosis || "No diagnosis"}</p>
+              <div style={styles.contentGrid}>
+                <div style={ui.panelSoft}>
+                  <div style={ui.label}>Chẩn đoán</div>
+                  <p style={styles.text}>
+                    {item.diagnosis || "Chưa có chẩn đoán cho hồ sơ này."}
+                  </p>
+                </div>
+                <div style={ui.panelSoft}>
+                  <div style={ui.label}>Ghi chú điều trị</div>
+                  <p style={styles.text}>{item.notes || "Chưa có ghi chú điều trị."}</p>
+                </div>
               </div>
 
-              <div style={styles.section}>
-                <strong>Notes</strong>
-                <p style={styles.text}>{item.notes || "No notes"}</p>
+              <div style={styles.footerRow}>
+                <div style={createStatusPill("success")}>
+                  Lịch hẹn liên quan: #{item.appointmentId}
+                </div>
               </div>
-
-              <div style={styles.footer}>
-                Appointment #{item.appointmentId}
-              </div>
-            </div>
+            </article>
           ))}
         </div>
       )}
@@ -64,78 +80,39 @@ function MedicalRecordPage() {
   );
 }
 
-export default MedicalRecordPage;
-
 const styles = {
-  page: {
-    display: "grid",
-    gap: "20px",
-  },
-  header: {
-    background: "#fff",
-    borderRadius: "20px",
-    padding: "24px",
-    boxShadow: "0 10px 28px rgba(15, 23, 42, 0.06)",
-  },
-  title: {
-    margin: 0,
-  },
-  subtitle: {
-    margin: "10px 0 0",
-    color: "#64748b",
-  },
-  stateCard: {
-    background: "#fff",
-    borderRadius: "18px",
-    padding: "18px",
-  },
-  errorCard: {
-    background: "#fff1f2",
-    color: "#9f1239",
-    borderRadius: "18px",
-    padding: "18px",
-    border: "1px solid #fecdd3",
-  },
-  timeline: {
-    display: "grid",
-    gap: "18px",
-  },
-  card: {
-    background: "#fff",
-    borderRadius: "20px",
-    padding: "22px",
-    boxShadow: "0 12px 30px rgba(15, 23, 42, 0.08)",
-  },
-  cardTop: {
+  topRow: {
     display: "flex",
     justifyContent: "space-between",
     gap: "16px",
     alignItems: "flex-start",
+    marginBottom: "18px",
+  },
+  cardTitle: {
+    margin: 0,
+    color: "#16324f",
+    fontSize: "24px",
   },
   meta: {
     margin: "8px 0 0",
-    color: "#0f766e",
+    color: "#5c7894",
     fontWeight: 600,
   },
-  dateBadge: {
-    padding: "8px 12px",
-    borderRadius: "999px",
-    background: "#e0f2fe",
-    color: "#075985",
-    fontWeight: 700,
-    fontSize: "12px",
-  },
-  section: {
-    marginTop: "16px",
+  contentGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    gap: "16px",
   },
   text: {
-    margin: "8px 0 0",
-    color: "#0f172a",
-    lineHeight: 1.6,
+    margin: "10px 0 0",
+    color: "#34506e",
+    lineHeight: 1.75,
   },
-  footer: {
+  footerRow: {
     marginTop: "18px",
-    color: "#64748b",
-    fontSize: "14px",
+    display: "flex",
+    justifyContent: "flex-start",
   },
 };
+
+export default MedicalRecordPage;

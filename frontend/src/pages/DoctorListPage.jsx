@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api, { getErrorMessage } from "../services/api";
+import usePageMeta from "../hooks/usePageMeta";
 
 function DoctorListPage() {
   const [doctors, setDoctors] = useState([]);
@@ -13,11 +13,16 @@ function DoctorListPage() {
   const [reviewsByDoctor, setReviewsByDoctor] = useState({});
   const [reviewOpenByDoctor, setReviewOpenByDoctor] = useState({});
 
+  usePageMeta(
+    "Đặt lịch khám",
+    "Xem danh sách bác sĩ, khung giờ còn trống và đặt lịch khám trực tuyến theo ngày giờ mong muốn.",
+  );
+
   useEffect(() => {
     api
       .get("/api/patient/doctors")
-      .then((res) => {
-        setDoctors(res.data?.data || []);
+      .then((response) => {
+        setDoctors(response.data?.data || []);
       })
       .catch((error) => {
         setErrorText(getErrorMessage(error, "Không tải được danh sách bác sĩ."));
@@ -31,10 +36,10 @@ function DoctorListPage() {
     const date = selectedDate || today;
     try {
       setSlotLoadingByDoctor((prev) => ({ ...prev, [doctorId]: true }));
-      const res = await api.get(`/api/doctors/${doctorId}/slots?date=${date}`);
-      setSlotsByDoctor((prev) => ({ ...prev, [doctorId]: res.data?.data || [] }));
+      const response = await api.get(`/api/doctors/${doctorId}/slots?date=${date}`);
+      setSlotsByDoctor((prev) => ({ ...prev, [doctorId]: response.data?.data || [] }));
     } catch (error) {
-      alert(getErrorMessage(error, "Không tải được slot khám."));
+      alert(getErrorMessage(error, "Không tải được khung giờ khám."));
     } finally {
       setSlotLoadingByDoctor((prev) => ({ ...prev, [doctorId]: false }));
     }
@@ -42,7 +47,7 @@ function DoctorListPage() {
 
   const handleBook = async (doctorId, slot) => {
     try {
-      const reason = bookingByDoctor[doctorId]?.reason?.trim() || "General consultation";
+      const reason = bookingByDoctor[doctorId]?.reason?.trim() || "Khám tổng quát";
       await api.post("/api/patient/appointments", {
         doctorId,
         date: selectedDate || today,
@@ -66,8 +71,8 @@ function DoctorListPage() {
     }
 
     try {
-      const res = await api.get(`/api/doctors/${doctorId}/reviews`);
-      setReviewsByDoctor((prev) => ({ ...prev, [doctorId]: res.data?.data || [] }));
+      const response = await api.get(`/api/doctors/${doctorId}/reviews`);
+      setReviewsByDoctor((prev) => ({ ...prev, [doctorId]: response.data?.data || [] }));
     } catch (error) {
       alert(getErrorMessage(error, "Không tải được đánh giá bác sĩ."));
     }
@@ -75,25 +80,26 @@ function DoctorListPage() {
 
   return (
     <div style={styles.page}>
-      <div style={styles.hero}>
+      <section style={styles.hero}>
         <div>
-          <h2 style={styles.title}>Book Appointment Online</h2>
+          <div style={styles.eyebrow}>Đặt lịch khám trực tuyến</div>
+          <h1 style={styles.title}>Chọn bác sĩ phù hợp và giữ chỗ chỉ trong vài bước</h1>
           <p style={styles.subtitle}>
-            Chọn bác sĩ, ngày khám và giờ khám trực tiếp trên hệ thống.
+            Xem bác sĩ còn lịch trống, chọn ngày khám, khung giờ mong muốn và gửi lý do thăm khám ngay trên hệ thống.
           </p>
         </div>
 
         <div style={styles.datePicker}>
-          <label style={styles.label}>Appointment Date</label>
+          <label style={styles.label}>Ngày khám</label>
           <input
             type="date"
             min={today}
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(event) => setSelectedDate(event.target.value)}
             style={styles.input}
           />
         </div>
-      </div>
+      </section>
 
       {loading && <div style={styles.stateCard}>Đang tải danh sách bác sĩ...</div>}
       {!loading && errorText && <div style={styles.errorCard}>{errorText}</div>}
@@ -101,28 +107,28 @@ function DoctorListPage() {
       {!loading && !errorText && (
         <div style={styles.grid}>
           {doctors.map((doctor) => (
-            <div key={doctor.id} style={styles.card}>
+            <article key={doctor.id} style={styles.card}>
               <div style={styles.cardHeader}>
                 <div>
                   <h3 style={{ margin: 0 }}>{doctor.name}</h3>
-                  <p style={styles.specialty}>{doctor.specialty || "General"}</p>
+                  <p style={styles.specialty}>{doctor.specialty || "Đa khoa"}</p>
                 </div>
                 <div style={styles.ratingBadge}>
-                  {doctor.averageRating ? `${doctor.averageRating}/5` : "No review"}
+                  {doctor.averageRating ? `${doctor.averageRating}/5` : "Chưa có đánh giá"}
                 </div>
               </div>
 
-              <p style={styles.meta}>Experience: {doctor.experience ?? 0} years</p>
+              <div style={styles.infoLine}>Kinh nghiệm: {doctor.experience ?? 0} năm</div>
 
               <textarea
-                placeholder="Reason for visit"
+                placeholder="Lý do thăm khám"
                 value={bookingByDoctor[doctor.id]?.reason || ""}
-                onChange={(e) =>
+                onChange={(event) =>
                   setBookingByDoctor((prev) => ({
                     ...prev,
                     [doctor.id]: {
                       ...prev[doctor.id],
-                      reason: e.target.value,
+                      reason: event.target.value,
                     },
                   }))
                 }
@@ -131,16 +137,16 @@ function DoctorListPage() {
 
               <div style={styles.actions}>
                 <button onClick={() => handleLoadSlots(doctor.id)} style={styles.primaryButton}>
-                  {slotLoadingByDoctor[doctor.id] ? "Loading..." : "Load Slots"}
+                  {slotLoadingByDoctor[doctor.id] ? "Đang tải..." : "Tải khung giờ"}
                 </button>
                 <button onClick={() => toggleReviews(doctor.id)} style={styles.secondaryButton}>
-                  {reviewOpenByDoctor[doctor.id] ? "Hide Reviews" : "View Reviews"}
+                  {reviewOpenByDoctor[doctor.id] ? "Ẩn đánh giá" : "Xem đánh giá"}
                 </button>
               </div>
 
               <div style={styles.slotWrap}>
                 {(slotsByDoctor[doctor.id] || []).length === 0 ? (
-                  <p style={styles.emptyText}>Chưa tải slot hoặc không còn slot trống.</p>
+                  <p style={styles.emptyText}>Chưa tải khung giờ hoặc hiện không còn giờ trống.</p>
                 ) : (
                   <div style={styles.slotGrid}>
                     {slotsByDoctor[doctor.id].map((slot) => (
@@ -159,7 +165,7 @@ function DoctorListPage() {
               {reviewOpenByDoctor[doctor.id] && (
                 <div style={styles.reviewBlock}>
                   {(reviewsByDoctor[doctor.id] || []).length === 0 ? (
-                    <p style={styles.emptyText}>Chưa có đánh giá nào.</p>
+                    <p style={styles.emptyText}>Bác sĩ này chưa có đánh giá nào.</p>
                   ) : (
                     reviewsByDoctor[doctor.id].map((review) => (
                       <div key={review.id} style={styles.reviewCard}>
@@ -173,7 +179,7 @@ function DoctorListPage() {
                   )}
                 </div>
               )}
-            </div>
+            </article>
           ))}
         </div>
       )}
@@ -184,81 +190,64 @@ function DoctorListPage() {
 export default DoctorListPage;
 
 const styles = {
-  page: {
-    display: "grid",
-    gap: "24px",
-  },
+  page: { display: "grid", gap: "24px" },
   hero: {
-    background: "linear-gradient(135deg, #082f49, #164e63)",
+    background:
+      "linear-gradient(135deg, rgba(8, 47, 73, 0.96), rgba(14, 116, 144, 0.92) 54%, rgba(20, 184, 166, 0.88))",
     color: "#fff",
-    borderRadius: "24px",
-    padding: "28px",
-    display: "flex",
-    justifyContent: "space-between",
+    borderRadius: "32px",
+    padding: "32px",
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1.4fr) minmax(240px, 0.65fr)",
     gap: "24px",
-    flexWrap: "wrap",
+    alignItems: "center",
   },
-  title: {
-    margin: 0,
-    fontSize: "32px",
+  eyebrow: {
+    display: "inline-flex",
+    padding: "8px 14px",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.14)",
+    fontWeight: 800,
+    fontSize: "12px",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
   },
-  subtitle: {
-    margin: "12px 0 0",
-    color: "#dbeafe",
-    maxWidth: "600px",
-  },
+  title: { margin: "18px 0 0", fontSize: "38px", lineHeight: 1.12, letterSpacing: "-0.03em" },
+  subtitle: { margin: "14px 0 0", color: "#d7f4ff", maxWidth: "680px", lineHeight: 1.7 },
   datePicker: {
     minWidth: "240px",
-    background: "rgba(255,255,255,0.12)",
-    borderRadius: "18px",
+    background: "rgba(255,255,255,0.14)",
+    borderRadius: "22px",
     padding: "18px",
+    border: "1px solid rgba(255,255,255,0.16)",
   },
-  label: {
-    display: "block",
-    marginBottom: "8px",
-    fontWeight: 600,
-  },
+  label: { display: "block", marginBottom: "8px", fontWeight: 700 },
   input: {
     width: "100%",
     padding: "12px",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.3)",
+    borderRadius: "14px",
+    border: "1px solid rgba(255,255,255,0.28)",
     background: "#fff",
     color: "#0f172a",
   },
-  stateCard: {
-    background: "#fff",
-    borderRadius: "18px",
-    padding: "18px",
-  },
+  stateCard: { background: "rgba(255,255,255,0.9)", borderRadius: "20px", padding: "18px" },
   errorCard: {
     background: "#fff1f2",
     color: "#9f1239",
-    borderRadius: "18px",
+    borderRadius: "20px",
     padding: "18px",
     border: "1px solid #fecdd3",
   },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "20px",
-  },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" },
   card: {
-    background: "#fff",
-    borderRadius: "20px",
-    padding: "22px",
-    boxShadow: "0 12px 30px rgba(15, 23, 42, 0.08)",
+    background: "rgba(255,255,255,0.92)",
+    borderRadius: "24px",
+    padding: "24px",
+    boxShadow: "0 18px 36px rgba(15, 23, 42, 0.07)",
+    border: "1px solid rgba(148, 163, 184, 0.16)",
   },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: "16px",
-  },
-  specialty: {
-    margin: "8px 0 0",
-    color: "#0369a1",
-    fontWeight: 600,
-  },
+  cardHeader: { display: "flex", justifyContent: "space-between", gap: "16px" },
+  specialty: { margin: "8px 0 0", color: "#0f766e", fontWeight: 700 },
   ratingBadge: {
     whiteSpace: "nowrap",
     alignSelf: "flex-start",
@@ -266,82 +255,52 @@ const styles = {
     borderRadius: "999px",
     background: "#ecfccb",
     color: "#3f6212",
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: "13px",
   },
-  meta: {
-    color: "#64748b",
-    margin: "14px 0 0",
-  },
+  infoLine: { color: "#5d7088", marginTop: "16px" },
   textarea: {
     width: "100%",
-    minHeight: "92px",
+    minHeight: "96px",
     marginTop: "16px",
-    borderRadius: "14px",
-    border: "1px solid #cbd5e1",
-    padding: "12px",
+    borderRadius: "16px",
+    border: "1px solid rgba(148, 163, 184, 0.24)",
+    padding: "14px",
     resize: "vertical",
+    background: "#fff",
   },
-  actions: {
-    display: "flex",
-    gap: "10px",
-    marginTop: "16px",
-    flexWrap: "wrap",
-  },
+  actions: { display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" },
   primaryButton: {
     border: "none",
-    borderRadius: "12px",
-    background: "#0f766e",
+    borderRadius: "14px",
+    background: "linear-gradient(135deg, #0f766e, #2563eb)",
     color: "#fff",
     padding: "12px 16px",
-    fontWeight: 700,
+    fontWeight: 800,
     cursor: "pointer",
   },
   secondaryButton: {
-    border: "1px solid #cbd5e1",
-    borderRadius: "12px",
+    border: "1px solid rgba(148, 163, 184, 0.24)",
+    borderRadius: "14px",
     background: "#fff",
-    color: "#0f172a",
+    color: "#10233c",
     padding: "12px 16px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  slotWrap: {
-    marginTop: "18px",
-  },
-  emptyText: {
-    color: "#64748b",
-    margin: 0,
-  },
-  slotGrid: {
-    display: "flex",
-    gap: "10px",
-    flexWrap: "wrap",
-  },
-  slotButton: {
-    border: "none",
-    borderRadius: "12px",
-    background: "#e0f2fe",
-    color: "#075985",
-    padding: "10px 14px",
     fontWeight: 700,
     cursor: "pointer",
   },
-  reviewBlock: {
-    marginTop: "18px",
-    display: "grid",
-    gap: "10px",
-  },
-  reviewCard: {
-    background: "#f8fafc",
+  slotWrap: { marginTop: "18px" },
+  emptyText: { color: "#5d7088", margin: 0, lineHeight: 1.6 },
+  slotGrid: { display: "flex", gap: "10px", flexWrap: "wrap" },
+  slotButton: {
+    border: "none",
     borderRadius: "14px",
-    padding: "14px",
+    background: "#e0f2fe",
+    color: "#075985",
+    padding: "10px 14px",
+    fontWeight: 800,
+    cursor: "pointer",
   },
-  reviewTop: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: "12px",
-    fontSize: "13px",
-    color: "#64748b",
-  },
+  reviewBlock: { marginTop: "18px", display: "grid", gap: "10px" },
+  reviewCard: { background: "#f8fafc", borderRadius: "16px", padding: "14px" },
+  reviewTop: { display: "flex", justifyContent: "space-between", gap: "12px", fontSize: "13px", color: "#64748b" },
 };

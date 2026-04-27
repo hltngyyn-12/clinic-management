@@ -33,7 +33,8 @@ public class SecurityConfig {
                                 "/api/test",
                                 "/api/auth/register",
                                 "/api/auth/login",
-                                "/api/auth/refresh"
+                                "/api/auth/refresh",
+                                "/api/payments/momo/**"
                         ).permitAll()
 
                         .requestMatchers("/api/medical-records/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
