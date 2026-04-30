@@ -8,8 +8,8 @@ function HomePage() {
   const navigate = useNavigate();
 
   usePageMeta(
-    user ? "Tổng quan hệ thống" : "Cổng thông tin phòng khám",
-    "ClinicMS giúp bệnh nhân đặt lịch khám, bác sĩ quản lý hồ sơ điều trị và quản trị viên vận hành phòng khám trên một nền tảng thống nhất.",
+    user ? "Trang chủ" : "ClinicMS | Hệ thống quản lý phòng khám",
+    "ClinicMS giúp bệnh nhân đặt lịch khám trực tuyến, theo dõi lịch sử điều trị; hỗ trợ bác sĩ quản lý hồ sơ bệnh án điện tử; đồng thời giúp phòng khám vận hành lịch làm việc, thuốc, chuyên khoa và doanh thu trên một nền tảng thống nhất.",
   );
 
   if (!user) {
@@ -17,33 +17,68 @@ function HomePage() {
       <div style={styles.page}>
         <section style={styles.publicHero}>
           <div style={styles.publicMain}>
-            <div style={styles.kicker}>CHĂM SÓC Y TẾ THÔNG MINH</div>
-            <h1 style={styles.publicTitle}>Cổng thông tin phòng khám theo chuẩn trải nghiệm bệnh viện hiện đại</h1>
+            <div style={styles.kicker}>Nền tảng quản lý phòng khám</div>
+            <h1 style={styles.publicTitle}>
+              Đặt lịch khám, theo dõi điều trị và vận hành phòng khám trên một
+              hệ thống thống nhất
+            </h1>
             <p style={styles.publicText}>
-              Từ đặt lịch khám trực tuyến, hồ sơ bệnh án số, đơn thuốc điện tử đến báo cáo vận hành, mọi quy trình đều được tổ chức rõ ràng, đáng tin cậy và dễ sử dụng.
+              ClinicMS được xây dựng cho mô hình phòng khám hiện đại: bệnh nhân
+              chủ động chọn bác sĩ và khung giờ phù hợp, bác sĩ xử lý hồ sơ bệnh
+              án điện tử ngay trong ngày khám, còn bộ phận quản trị theo dõi
+              lịch làm việc, danh mục chuyên môn và báo cáo vận hành trên cùng
+              một nền tảng.
             </p>
             <div style={styles.heroActions}>
-              <button style={styles.primaryButton} onClick={() => navigate("/login")}>
+              <button
+                style={styles.primaryButton}
+                onClick={() => navigate("/login")}
+              >
                 Đăng nhập hệ thống
               </button>
-              <button style={styles.secondaryButton} onClick={() => navigate("/register")}>
-                Tạo tài khoản bệnh nhân
+              <button
+                style={styles.secondaryButton}
+                onClick={() => navigate("/register")}
+              >
+                Tạo tài khoản
               </button>
             </div>
           </div>
 
           <div style={styles.publicAside}>
             <div style={styles.highlightCard}>
-              <span style={styles.highlightLabel}>Năng lực hiện tại</span>
-              <strong style={styles.highlightValue}>3 vai trò, 18 nhóm tính năng</strong>
+              <span style={styles.highlightLabel}>Phạm vi vận hành</span>
+              <strong style={styles.highlightValue}>
+                Bệnh nhân, bác sĩ và quản trị viên trên cùng một nền tảng
+              </strong>
               <p style={styles.highlightText}>
-                Bệnh nhân, bác sĩ và quản trị viên cùng làm việc trên một hệ thống, nhưng mỗi vai trò có giao diện và luồng thao tác riêng.
+                Mỗi vai trò có khu vực làm việc riêng, nhưng toàn bộ dữ liệu đều
+                được đồng bộ để quy trình tiếp nhận, khám bệnh, kê đơn và theo
+                dõi sau khám diễn ra liền mạch hơn.
               </p>
             </div>
             <div style={styles.microStats}>
-              <div style={styles.microStat}><strong>Online</strong><span>Đặt lịch và thanh toán đặt cọc</span></div>
-              <div style={styles.microStat}><strong>Clinical</strong><span>Hồ sơ khám, kê đơn, xét nghiệm</span></div>
-              <div style={styles.microStat}><strong>Operations</strong><span>Bác sĩ, danh mục, doanh thu, thông báo</span></div>
+              <div style={styles.microStat}>
+                <strong>Đặt lịch rõ ràng</strong>
+                <span>
+                  Xem bác sĩ, khung giờ còn trống và tạo lịch hẹn trực tuyến
+                  trong vài bước.
+                </span>
+              </div>
+              <div style={styles.microStat}>
+                <strong>Hồ sơ điều trị tập trung</strong>
+                <span>
+                  Lưu chẩn đoán, đơn thuốc, chỉ định xét nghiệm và lịch sử khám
+                  bệnh ở cùng một nơi.
+                </span>
+              </div>
+              <div style={styles.microStat}>
+                <strong>Quản trị vận hành thuận tiện</strong>
+                <span>
+                  Theo dõi bác sĩ, thuốc, chuyên khoa, slot khám và doanh thu
+                  trên giao diện thống nhất.
+                </span>
+              </div>
             </div>
           </div>
         </section>
@@ -51,16 +86,19 @@ function HomePage() {
         <section style={styles.serviceGrid}>
           {[
             {
-              title: "Đặt lịch thuận tiện",
-              description: "Bệnh nhân xem bác sĩ còn lịch trống, chọn ngày giờ và gửi lý do khám ngay trên giao diện web.",
+              title: "Đặt lịch khám chủ động, không cần chờ gọi điện",
+              description:
+                "Người bệnh có thể tra cứu bác sĩ theo chuyên khoa, xem thời gian còn trống và gửi yêu cầu thăm khám trực tiếp trên website, giảm bớt các bước đặt lịch thủ công.",
             },
             {
-              title: "Quy trình khám số hóa",
-              description: "Bác sĩ xử lý ca khám, tạo hồ sơ, kê đơn và yêu cầu xét nghiệm trên cùng một không gian làm việc.",
+              title: "Theo dõi điều trị thuận tiện hơn sau mỗi lần khám",
+              description:
+                "Hồ sơ khám bệnh, đơn thuốc điện tử, kết quả xét nghiệm và nhận xét sau khám được lưu lại đầy đủ để cả bệnh nhân lẫn bác sĩ dễ tra cứu khi cần.",
             },
             {
-              title: "Vận hành minh bạch",
-              description: "Quản trị viên theo dõi dữ liệu bác sĩ, danh mục, cấu hình slot và báo cáo doanh thu tập trung.",
+              title: "Vận hành phòng khám nhất quán và dễ kiểm soát",
+              description:
+                "Phòng khám có thể quản lý bác sĩ, chuyên khoa, thuốc, lịch làm việc, thông báo và báo cáo doanh thu trên cùng một hệ thống thay vì tách rời nhiều công cụ.",
             },
           ].map((item) => (
             <article key={item.title} style={styles.serviceCard}>
@@ -76,110 +114,135 @@ function HomePage() {
 
   const patientCards = [
     {
-      title: "Đặt lịch khám",
-      description: "Chọn bác sĩ, ngày khám và khung giờ phù hợp, sau đó xác nhận lịch trực tuyến.",
+      title: "Đặt lịch khám theo bác sĩ và khung giờ phù hợp",
+      description:
+        "Tra cứu bác sĩ theo chuyên khoa, xem lịch trống và tạo lịch hẹn mới phù hợp với nhu cầu thăm khám của bạn.",
       action: () => navigate("/doctors"),
     },
     {
-      title: "Lịch hẹn của tôi",
-      description: "Theo dõi lịch đã đặt, thanh toán đặt cọc và gửi đánh giá sau khi hoàn tất buổi khám.",
+      title: "Theo dõi lịch hẹn và hoàn tất thanh toán đặt cọc",
+      description:
+        "Quản lý các lịch đã đặt, kiểm tra trạng thái thanh toán và xem hóa đơn cho từng lần khám ngay trong cổng bệnh nhân.",
       action: () => navigate("/appointments"),
     },
     {
-      title: "Lịch sử khám",
-      description: "Xem lại chẩn đoán, ghi chú điều trị và thông tin của các lần khám trước đây.",
+      title: "Xem lại lịch sử khám và thông tin điều trị",
+      description:
+        "Tra cứu các chẩn đoán, ghi chú điều trị và lịch tái khám từ những lần khám trước để theo dõi sức khỏe đầy đủ hơn.",
       action: () => navigate("/medical-records"),
     },
     {
-      title: "Đơn thuốc điện tử",
-      description: "Tra cứu đơn thuốc, liều dùng và hướng dẫn sử dụng theo từng hồ sơ khám.",
+      title: "Kiểm tra đơn thuốc điện tử",
+      description:
+        "Xem tên thuốc, liều dùng, thời gian sử dụng và hướng dẫn dùng thuốc theo từng hồ sơ khám bệnh.",
       action: () => navigate("/prescriptions"),
     },
     {
-      title: "Kết quả xét nghiệm",
-      description: "Theo dõi yêu cầu xét nghiệm, kết quả và kết luận mà không cần quay lại quầy tiếp nhận.",
+      title: "Nhận kết quả xét nghiệm trực tuyến",
+      description:
+        "Theo dõi chỉ định xét nghiệm, kết quả và kết luận chuyên môn mà không cần chờ nhận bản giấy tại quầy.",
       action: () => navigate("/test-results"),
     },
     {
-      title: "Đánh giá bác sĩ",
-      description: "Quản lý các phản hồi đã gửi và hoàn thiện trải nghiệm chăm sóc sau điều trị.",
+      title: "Gửi đánh giá sau buổi khám",
+      description:
+        "Chia sẻ trải nghiệm thăm khám và mức độ hài lòng để phòng khám tiếp tục cải thiện chất lượng dịch vụ.",
       action: () => navigate("/reviews"),
     },
   ];
 
   const doctorCards = [
     {
-      title: "Lịch khám hôm nay",
-      description: "Mở không gian làm việc để xử lý danh sách bệnh nhân, hồ sơ khám, đơn thuốc và xét nghiệm.",
+      title: "Xử lý lịch khám và hồ sơ bệnh án trong ngày",
+      description:
+        "Tiếp nhận lịch hẹn, ghi chẩn đoán, lập hồ sơ bệnh án, kê đơn thuốc và chỉ định xét nghiệm ngay trong không gian làm việc của bác sĩ.",
       action: () => navigate("/doctor/workspace"),
     },
     {
-      title: "Hồ sơ bác sĩ",
-      description: "Cập nhật thông tin hành nghề, số phòng, giờ làm việc và phí tư vấn để hiển thị nhất quán.",
+      title: "Cập nhật hồ sơ chuyên môn và lịch làm việc",
+      description:
+        "Quản lý thông tin hiển thị cho bệnh nhân như chuyên khoa, thời gian làm việc, số phòng và phần giới thiệu chuyên môn.",
       action: () => navigate("/doctor/profile"),
     },
   ];
 
   const adminCards = [
     {
-      title: "Quản lý bác sĩ",
-      description: "Tạo mới, cập nhật và theo dõi trạng thái hoạt động của tài khoản bác sĩ trong hệ thống.",
+      title: "Quản lý tài khoản và hồ sơ bác sĩ",
+      description:
+        "Theo dõi danh sách bác sĩ, tạo mới hoặc cập nhật thông tin hành nghề và trạng thái hoạt động trên hệ thống.",
       action: () => navigate("/admin/doctors"),
     },
     {
-      title: "Danh mục hệ thống",
-      description: "Quản lý chuyên khoa và thuốc dùng cho toàn bộ quy trình khám và kê đơn.",
+      title: "Duy trì danh mục chuyên khoa và thuốc",
+      description:
+        "Cập nhật dữ liệu nền tảng để hỗ trợ đặt lịch, kê đơn thuốc và vận hành phòng khám nhất quán hơn.",
       action: () => navigate("/admin/catalog"),
     },
     {
-      title: "Vận hành phòng khám",
-      description: "Cấu hình slot, xem doanh thu và quản lý thông báo gửi đến từng nhóm người dùng.",
+      title: "Điều hành slot khám, doanh thu và thông báo",
+      description:
+        "Theo dõi các cấu hình vận hành quan trọng của phòng khám trên một khu vực quản trị tập trung.",
       action: () => navigate("/admin/operations"),
     },
   ];
 
   const cards =
-    role === "DOCTOR" ? doctorCards : role === "ADMIN" ? adminCards : patientCards;
+    role === "DOCTOR"
+      ? doctorCards
+      : role === "ADMIN"
+        ? adminCards
+        : patientCards;
 
   const roleLabel =
-    role === "DOCTOR" ? "Bác sĩ" : role === "ADMIN" ? "Quản trị viên" : "Bệnh nhân";
+    role === "DOCTOR"
+      ? "Bác sĩ"
+      : role === "ADMIN"
+        ? "Quản trị viên"
+        : "Bệnh nhân";
 
   return (
     <div style={styles.page}>
       <section style={styles.dashboardHero}>
         <div>
           <div style={styles.kicker}>{roleLabel}</div>
-          <h1 style={styles.dashboardTitle}>Xin chào, {user.fullName || user.username}</h1>
+          <h1 style={styles.dashboardTitle}>
+            Xin chào, {user.fullName || user.username}
+          </h1>
           <p style={styles.dashboardText}>
             {role === "DOCTOR"
-              ? "Truy cập nhanh toàn bộ quy trình khám bệnh trong ngày, từ tiếp nhận ca khám cho tới kê đơn và theo dõi lịch sử điều trị."
+              ? "Đây là khu vực làm việc dành cho bác sĩ: theo dõi lịch khám trong ngày, cập nhật hồ sơ bệnh án, kê đơn thuốc và xem lại toàn bộ lịch sử điều trị của bệnh nhân."
               : role === "ADMIN"
-                ? "Quản trị toàn bộ dữ liệu nền, người dùng và hoạt động vận hành của phòng khám trên một giao diện rõ ràng, tập trung."
-                : "Sử dụng cổng bệnh nhân để đặt lịch online, thanh toán đặt cọc, xem kết quả xét nghiệm và đơn thuốc điện tử mọi lúc."}
+                ? "Đây là khu vực điều hành dành cho quản trị viên: quản lý dữ liệu nền, tài khoản bác sĩ và các hoạt động vận hành quan trọng của phòng khám."
+                : "Đây là cổng thông tin dành cho bệnh nhân: đặt lịch khám trực tuyến, thanh toán đặt cọc, xem đơn thuốc, kết quả xét nghiệm và lịch sử khám bệnh."}
           </p>
         </div>
 
         <div style={styles.heroMetricPanel}>
           <div style={styles.heroMetricCard}>
-            <span style={styles.heroMetricLabel}>Vai trò hiện tại</span>
+            <span style={styles.heroMetricLabel}>Vai trò đang đăng nhập</span>
             <strong style={styles.heroMetricValue}>{roleLabel}</strong>
           </div>
           <div style={styles.heroMetricCard}>
             <span style={styles.heroMetricLabel}>Trạng thái hệ thống</span>
-            <strong style={styles.heroMetricValue}>Sẵn sàng tương tác</strong>
+            <strong style={styles.heroMetricValue}>Đang sẵn sàng</strong>
           </div>
         </div>
       </section>
 
       <section style={styles.dashboardGrid}>
         {cards.map((card) => (
-          <button key={card.title} onClick={card.action} style={styles.featureCard}>
+          <button
+            key={card.title}
+            onClick={card.action}
+            style={styles.featureCard}
+          >
             <div style={styles.featureTop}>
               <span style={styles.featureChip}>Truy cập nhanh</span>
             </div>
             <h3 style={styles.featureTitle}>{card.title}</h3>
             <p style={styles.featureText}>{card.description}</p>
-            <span style={styles.featureLink}>Mở chức năng</span>
+            <span style={styles.featureLink}>Bắt đầu sử dụng</span>
           </button>
         ))}
       </section>

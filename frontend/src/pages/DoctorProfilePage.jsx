@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
-import { createAutoGrid, createHero, gradients, ui } from "../styles/designSystem";
+import {
+  createAutoGrid,
+  createHero,
+  gradients,
+  ui,
+} from "../styles/designSystem";
 
 const emptyProfile = {
   fullName: "",
@@ -24,8 +29,8 @@ function DoctorProfilePage() {
   const [saving, setSaving] = useState(false);
 
   usePageMeta(
-    "Hồ sơ bác sĩ",
-    "Cập nhật thông tin chuyên môn, thời gian làm việc và hồ sơ hiển thị cho bệnh nhân.",
+    "Hồ sơ",
+    "Cập nhật thông tin chuyên môn, thời gian làm việc, số phòng khám và nội dung hiển thị dành cho bệnh nhân trên ClinicMS.",
   );
 
   useEffect(() => {
@@ -71,7 +76,9 @@ function DoctorProfilePage() {
         ...form,
         experience: form.experience === "" ? null : Number(form.experience),
         slotDurationMinutes:
-          form.slotDurationMinutes === "" ? null : Number(form.slotDurationMinutes),
+          form.slotDurationMinutes === ""
+            ? null
+            : Number(form.slotDurationMinutes),
       };
 
       const response = await api.put("/api/doctor/profile", payload);
@@ -90,9 +97,9 @@ function DoctorProfilePage() {
         slotDurationMinutes: data?.slotDurationMinutes ?? "",
         consultationFee: data?.consultationFee || "",
       });
-      alert("Cập nhật hồ sơ bác sĩ thành công.");
+      alert("Đã cập nhật hồ sơ bác sĩ.");
     } catch (error) {
-      alert(getErrorMessage(error, "Cập nhật hồ sơ bác sĩ thất bại."));
+      alert(getErrorMessage(error, "Không thể cập nhật hồ sơ bác sĩ."));
     } finally {
       setSaving(false);
     }
@@ -102,10 +109,13 @@ function DoctorProfilePage() {
     <div style={ui.page}>
       <section style={createHero(gradients.doctor)}>
         <div style={ui.eyebrow}>Hồ sơ bác sĩ</div>
-        <h1 style={ui.title}>Quản lý thông tin hành nghề và lịch làm việc hiển thị công khai</h1>
+        <h1 style={ui.title}>
+          Cập nhật thông tin chuyên môn và lịch làm việc hiển thị cho bệnh nhân
+        </h1>
         <p style={ui.subtitle}>
-          Cập nhật hồ sơ chuyên môn, khung giờ tiếp nhận, số phòng và nội dung giới thiệu
-          để bệnh nhân có đủ thông tin trước khi đặt lịch khám.
+          Đây là khu vực để bác sĩ quản lý hồ sơ công khai trên hệ thống, bao
+          gồm chuyên khoa, thời gian làm việc, số phòng khám và phần giới thiệu
+          chuyên môn.
         </p>
       </section>
 
@@ -116,15 +126,19 @@ function DoctorProfilePage() {
           <>
             <div style={createAutoGrid(200)}>
               <div style={ui.panelSoft}>
-                <div style={ui.label}>Tài khoản</div>
-                <div style={styles.infoValue}>{profile?.username || "Chưa cập nhật"}</div>
+                <div style={ui.label}>Tài khoản đăng nhập</div>
+                <div style={styles.infoValue}>
+                  {profile?.username || "Chưa cập nhật"}
+                </div>
               </div>
               <div style={ui.panelSoft}>
-                <div style={ui.label}>Email</div>
-                <div style={styles.infoValue}>{profile?.email || "Chưa cập nhật"}</div>
+                <div style={ui.label}>Email liên hệ</div>
+                <div style={styles.infoValue}>
+                  {profile?.email || "Chưa cập nhật"}
+                </div>
               </div>
               <div style={ui.panelSoft}>
-                <div style={ui.label}>Trạng thái</div>
+                <div style={ui.label}>Trạng thái hoạt động</div>
                 <div style={styles.infoValue}>
                   {profile?.active ? "Đang hoạt động" : "Tạm khóa"}
                 </div>
@@ -133,9 +147,12 @@ function DoctorProfilePage() {
 
             <form onSubmit={handleSubmit} style={styles.form}>
               <div style={styles.sectionHead}>
-                <h2 style={ui.sectionTitle}>Thông tin hiển thị trên hệ thống</h2>
+                <h2 style={ui.sectionTitle}>
+                  Thông tin hiển thị trên hệ thống
+                </h2>
                 <p style={ui.sectionHint}>
-                  Dữ liệu dưới đây được dùng để hiển thị trên trang đặt lịch và hồ sơ bác sĩ.
+                  Các nội dung dưới đây sẽ được dùng khi bệnh nhân xem hồ sơ bác
+                  sĩ và lựa chọn lịch khám trực tuyến.
                 </p>
               </div>
 
@@ -144,21 +161,21 @@ function DoctorProfilePage() {
                   name="fullName"
                   value={form.fullName}
                   onChange={handleChange}
-                  placeholder="Họ và tên"
+                  placeholder="Họ và tên bác sĩ"
                   style={ui.input}
                 />
                 <input
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
-                  placeholder="Số điện thoại"
+                  placeholder="Số điện thoại liên hệ"
                   style={ui.input}
                 />
                 <input
                   name="specialty"
                   value={form.specialty}
                   onChange={handleChange}
-                  placeholder="Chuyên khoa"
+                  placeholder="Chuyên khoa phụ trách"
                   style={ui.input}
                 />
                 <input
@@ -202,7 +219,7 @@ function DoctorProfilePage() {
                   name="slotDurationMinutes"
                   value={form.slotDurationMinutes}
                   onChange={handleChange}
-                  placeholder="Thời lượng mỗi slot"
+                  placeholder="Thời lượng mỗi slot khám"
                   style={ui.input}
                 />
                 <input
@@ -218,13 +235,17 @@ function DoctorProfilePage() {
                 name="bio"
                 value={form.bio}
                 onChange={handleChange}
-                placeholder="Giới thiệu chuyên môn, định hướng điều trị và thế mạnh khám chữa bệnh"
+                placeholder="Giới thiệu chuyên môn, thế mạnh điều trị và định hướng chăm sóc bệnh nhân"
                 style={ui.textarea}
               />
 
               <div style={ui.actionRow}>
-                <button type="submit" style={ui.primaryButton} disabled={saving}>
-                  {saving ? "Đang lưu..." : "Lưu hồ sơ"}
+                <button
+                  type="submit"
+                  style={ui.primaryButton}
+                  disabled={saving}
+                >
+                  {saving ? "Đang lưu hồ sơ..." : "Lưu hồ sơ bác sĩ"}
                 </button>
               </div>
             </form>

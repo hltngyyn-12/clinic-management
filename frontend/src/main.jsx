@@ -5,6 +5,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./index.css";
 import "./App.css";
 import { AuthProvider } from "./context/AuthContext";
+import { initFeedbackUx } from "./utils/feedbackUx";
+
+initFeedbackUx();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

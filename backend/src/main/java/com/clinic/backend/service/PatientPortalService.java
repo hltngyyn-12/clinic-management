@@ -16,4 +16,6 @@ public interface PatientPortalService {
     ReviewResponse createReview(String username, CreateReviewRequest request);
     List<ReviewResponse> getMyReviews(String username);
     List<ReviewResponse> getDoctorReviews(Long doctorId);
+    PatientProfileResponse getProfile(String username);
+    PatientProfileResponse updateProfile(String username, UpdatePatientProfileRequest request);
 }

@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
-import { createHero, createStatusPill, gradients, ui } from "../styles/designSystem";
+import {
+  createHero,
+  createStatusPill,
+  gradients,
+  ui,
+} from "../styles/designSystem";
 
 function MedicalRecordPage() {
   const [items, setItems] = useState([]);
@@ -10,7 +15,7 @@ function MedicalRecordPage() {
 
   usePageMeta(
     "Lịch sử khám bệnh",
-    "Tra cứu hồ sơ khám bệnh, chẩn đoán và ghi chú điều trị của các lần thăm khám trước.",
+    "Tra cứu hồ sơ khám bệnh, chẩn đoán, ghi chú điều trị và thông tin bác sĩ phụ trách từ các lần thăm khám trước trên hệ thống ClinicMS.",
   );
 
   useEffect(() => {
@@ -20,7 +25,9 @@ function MedicalRecordPage() {
         setItems(response.data?.data || []);
       })
       .catch((error) => {
-        setErrorText(getErrorMessage(error, "Không tải được lịch sử khám."));
+        setErrorText(
+          getErrorMessage(error, "Không tải được lịch sử khám bệnh."),
+        );
       })
       .finally(() => setLoading(false));
   }, []);
@@ -29,17 +36,23 @@ function MedicalRecordPage() {
     <div style={ui.page}>
       <section style={createHero(gradients.patient)}>
         <div style={ui.eyebrow}>Hồ sơ điều trị</div>
-        <h1 style={ui.title}>Xem lại chẩn đoán và ghi chú điều trị theo từng lần khám</h1>
+        <h1 style={ui.title}>
+          Xem lại chẩn đoán, ghi chú điều trị và diễn tiến sức khỏe theo từng
+          lần thăm khám
+        </h1>
         <p style={ui.subtitle}>
-          Hồ sơ khám bệnh được sắp xếp theo thời gian, giúp bạn nắm nhanh lịch sử
-          điều trị và đối chiếu lại từng buổi thăm khám với bác sĩ.
+          Mỗi hồ sơ khám bệnh được lưu theo từng mốc thời gian để bạn dễ theo
+          dõi quá trình điều trị, đối chiếu chỉ định chuyên môn và chuẩn bị tốt
+          hơn cho những lần tái khám tiếp theo.
         </p>
       </section>
 
-      {loading && <div style={ui.stateCard}>Đang tải lịch sử khám...</div>}
+      {loading && <div style={ui.stateCard}>Đang tải lịch sử khám bệnh...</div>}
       {!loading && errorText && <div style={ui.errorCard}>{errorText}</div>}
       {!loading && !errorText && items.length === 0 && (
-        <div style={ui.stateCard}>Bạn chưa có hồ sơ khám nào.</div>
+        <div style={ui.stateCard}>
+          Bạn chưa có hồ sơ khám bệnh nào trên hệ thống.
+        </div>
       )}
 
       {!loading && !errorText && items.length > 0 && (
@@ -48,7 +61,7 @@ function MedicalRecordPage() {
             <article key={item.id} style={ui.card}>
               <div style={styles.topRow}>
                 <div>
-                  <h3 style={styles.cardTitle}>Hồ sơ #{item.id}</h3>
+                  <h3 style={styles.cardTitle}>Hồ sơ khám bệnh #{item.id}</h3>
                   <p style={styles.meta}>Bác sĩ phụ trách: {item.doctorName}</p>
                 </div>
                 <div style={createStatusPill("info")}>{item.createdAt}</div>
@@ -58,12 +71,16 @@ function MedicalRecordPage() {
                 <div style={ui.panelSoft}>
                   <div style={ui.label}>Chẩn đoán</div>
                   <p style={styles.text}>
-                    {item.diagnosis || "Chưa có chẩn đoán cho hồ sơ này."}
+                    {item.diagnosis ||
+                      "Hồ sơ này chưa có nội dung chẩn đoán chi tiết."}
                   </p>
                 </div>
                 <div style={ui.panelSoft}>
                   <div style={ui.label}>Ghi chú điều trị</div>
-                  <p style={styles.text}>{item.notes || "Chưa có ghi chú điều trị."}</p>
+                  <p style={styles.text}>
+                    {item.notes ||
+                      "Bác sĩ chưa bổ sung ghi chú điều trị cho hồ sơ này."}
+                  </p>
                 </div>
               </div>
 

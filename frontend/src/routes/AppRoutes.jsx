@@ -11,6 +11,7 @@ import CreateMedicalRecordPage from "../pages/CreateMedicalRecordPage";
 import PrescriptionsPage from "../pages/PrescriptionsPage";
 import TestResultsPage from "../pages/TestResultsPage";
 import MyReviewsPage from "../pages/MyReviewsPage";
+import PatientProfilePage from "../pages/PatientProfilePage";
 import PaymentResultPage from "../pages/PaymentResultPage";
 import InvoicePage from "../pages/InvoicePage";
 import DoctorWorkspacePage from "../pages/DoctorWorkspacePage";
@@ -82,6 +83,14 @@ function AppRoutes() {
             element={
               <RoleRoute allow={["PATIENT"]}>
                 <MyAppointmentsPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="patient/profile"
+            element={
+              <RoleRoute allow={["PATIENT"]}>
+                <PatientProfilePage />
               </RoleRoute>
             }
           />

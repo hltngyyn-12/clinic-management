@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -34,6 +36,7 @@ public class PatientPortalServiceImpl implements PatientPortalService {
     private final TestRequestRepository testRequestRepository;
     private final TestResultRepository testResultRepository;
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
 
     @Override
     public List<DoctorOptionResponse> getDoctors() {
@@ -41,7 +44,7 @@ public class PatientPortalServiceImpl implements PatientPortalService {
                 .map(doctor -> new DoctorOptionResponse(
                         doctor.getId(),
                         doctor.getName(),
-                        normalizeText(doctor.getSpecialty(), "General"),
+                        normalizeText(doctor.getSpecialty(), "Tổng quát"),
                         doctor.getExperience(),
                         roundRating(reviewRepository.findAverageRatingByDoctorId(doctor.getId()))
                 ))
@@ -98,7 +101,7 @@ public class PatientPortalServiceImpl implements PatientPortalService {
         appointment.setDoctor(doctor);
         appointment.setAppointmentDate(appointmentDate);
         appointment.setSlotTime(slotTime);
-        appointment.setReason(normalizeText(request.getReason(), "General consultation"));
+        appointment.setReason(normalizeText(request.getReason(), "Khám tổng quát"));
         appointment.setStatus("BOOKED");
         appointment.setDepositAmount(DEFAULT_DEPOSIT_AMOUNT);
         appointment.setPaymentStatus("UNPAID");
@@ -144,7 +147,7 @@ public class PatientPortalServiceImpl implements PatientPortalService {
                         record.getId(),
                         record.getAppointment() != null ? record.getAppointment().getId() : null,
                         record.getDoctor() != null ? record.getDoctor().getId() : null,
-                        record.getDoctor() != null ? record.getDoctor().getName() : "Unknown Doctor",
+                        record.getDoctor() != null ? record.getDoctor().getName() : "Chưa cập nhật",
                         record.getDiagnosis(),
                         record.getNotes(),
                         record.getCreatedAt() != null ? record.getCreatedAt().toString() : ""
@@ -161,10 +164,10 @@ public class PatientPortalServiceImpl implements PatientPortalService {
                         prescription.getMedicalRecord() != null ? prescription.getMedicalRecord().getId() : null,
                         prescription.getMedicalRecord() != null && prescription.getMedicalRecord().getDoctor() != null
                                 ? prescription.getMedicalRecord().getDoctor().getName()
-                                : "Unknown Doctor",
+                                : "Chưa cập nhật",
                         prescription.getMedicineName(),
                         prescription.getDosage(),
-                        normalizeText(prescription.getInstructions(), "No instructions")
+                        normalizeText(prescription.getInstructions(), "Chưa có hướng dẫn")
                 ))
                 .toList();
     }
@@ -183,11 +186,11 @@ public class PatientPortalServiceImpl implements PatientPortalService {
                     request.getMedicalRecord() != null ? request.getMedicalRecord().getId() : null,
                     request.getMedicalRecord() != null && request.getMedicalRecord().getDoctor() != null
                             ? request.getMedicalRecord().getDoctor().getName()
-                            : "Unknown Doctor",
+                            : "Chưa cập nhật",
                     request.getTestName(),
                     result != null ? "COMPLETED" : normalizeText(request.getStatus(), "PENDING"),
-                    result != null ? normalizeText(result.getResult(), "No result yet") : "Pending result",
-                    result != null ? normalizeText(result.getConclusion(), "No conclusion") : "Pending review"
+                    result != null ? normalizeText(result.getResult(), "Chưa có kết quả") : "Đang chờ kết quả",
+                    result != null ? normalizeText(result.getConclusion(), "Chưa có kết luận") : "Đang chờ bác sĩ kết luận"
             ));
         }
 
@@ -239,6 +242,35 @@ public class PatientPortalServiceImpl implements PatientPortalService {
                 .toList();
     }
 
+    @Override
+    public PatientProfileResponse getProfile(String username) {
+        return toPatientProfileResponse(getPatientByUsername(username));
+    }
+
+    @Override
+    public PatientProfileResponse updateProfile(String username, UpdatePatientProfileRequest request) {
+        Patient patient = getPatientByUsername(username);
+        User user = patient.getUser();
+
+        if (user == null) {
+            throw new ApiException("Không tìm thấy tài khoản bệnh nhân");
+        }
+
+        if (request.getFullName() != null && !request.getFullName().trim().isEmpty()) {
+            user.setFullName(request.getFullName().trim());
+        }
+
+        user.setPhone(trimOrNull(request.getPhone()));
+        patient.setDateOfBirth(parseOptionalLegacyDate(request.getDateOfBirth()));
+        patient.setGender(trimOrNull(request.getGender()));
+        patient.setAddress(trimOrNull(request.getAddress()));
+        patient.setInsuranceNumber(trimOrNull(request.getInsuranceNumber()));
+
+        userRepository.save(user);
+        Patient saved = patientRepository.save(patient);
+        return toPatientProfileResponse(saved);
+    }
+
     private Patient getPatientByUsername(String username) {
         return patientRepository.findByUserUsername(username)
                 .orElseThrow(() -> new ApiException("Không tìm thấy hồ sơ bệnh nhân"));
@@ -262,8 +294,8 @@ public class PatientPortalServiceImpl implements PatientPortalService {
         return new AppointmentResponse(
                 appointment.getId(),
                 doctor != null ? doctor.getId() : null,
-                doctor != null ? doctor.getName() : "Unknown Doctor",
-                doctor != null ? normalizeText(doctor.getSpecialty(), "General") : "General",
+                doctor != null ? doctor.getName() : "Chưa cập nhật",
+                doctor != null ? normalizeText(doctor.getSpecialty(), "Tổng quát") : "Tổng quát",
                 appointment.getAppointmentDate() != null ? appointment.getAppointmentDate().format(DATE_FORMAT) : "",
                 appointment.getSlotTime() != null ? appointment.getSlotTime().format(TIME_FORMAT) : "",
                 normalizeText(appointment.getStatus(), "BOOKED"),
@@ -279,10 +311,27 @@ public class PatientPortalServiceImpl implements PatientPortalService {
                 review.getId(),
                 review.getAppointment() != null ? review.getAppointment().getId() : null,
                 review.getDoctor() != null ? review.getDoctor().getId() : null,
-                review.getDoctor() != null ? review.getDoctor().getName() : "Unknown Doctor",
+                review.getDoctor() != null ? review.getDoctor().getName() : "Chưa cập nhật",
                 review.getRating(),
                 review.getComment(),
                 review.getCreatedAt() != null ? review.getCreatedAt().toString() : LocalDateTime.now().toString()
+        );
+    }
+
+    private PatientProfileResponse toPatientProfileResponse(Patient patient) {
+        User user = patient.getUser();
+        return new PatientProfileResponse(
+                patient.getId(),
+                user != null ? user.getUsername() : null,
+                user != null ? user.getEmail() : null,
+                user != null ? user.getFullName() : null,
+                user != null ? user.getPhone() : null,
+                patient.getDateOfBirth() != null
+                        ? patient.getDateOfBirth().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DATE_FORMAT)
+                        : null,
+                patient.getGender(),
+                patient.getAddress(),
+                patient.getInsuranceNumber()
         );
     }
 
@@ -306,9 +355,28 @@ public class PatientPortalServiceImpl implements PatientPortalService {
         }
     }
 
+    private Date parseOptionalLegacyDate(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            LocalDate localDate = LocalDate.parse(value.trim(), DATE_FORMAT);
+            return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        } catch (Exception ex) {
+            throw new ApiException("Ngày sinh không hợp lệ. Định dạng yyyy-MM-dd");
+        }
+    }
+
     private String normalizeText(String value, String fallback) {
         if (value == null || value.trim().isEmpty()) {
             return fallback;
+        }
+        return value.trim();
+    }
+
+    private String trimOrNull(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
         }
         return value.trim();
     }

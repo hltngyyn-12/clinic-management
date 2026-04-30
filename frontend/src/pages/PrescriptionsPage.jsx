@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
-import { createAutoGrid, createHero, gradients, ui } from "../styles/designSystem";
+import {
+  createAutoGrid,
+  createHero,
+  gradients,
+  ui,
+} from "../styles/designSystem";
 
 function PrescriptionsPage() {
   const [items, setItems] = useState([]);
@@ -9,8 +14,8 @@ function PrescriptionsPage() {
   const [errorText, setErrorText] = useState("");
 
   usePageMeta(
-    "Đơn thuốc điện tử",
-    "Xem danh sách đơn thuốc điện tử, liều dùng và hướng dẫn sử dụng được kê bởi bác sĩ.",
+    "Đơn thuốc",
+    "Xem danh sách đơn thuốc điện tử, liều dùng, tần suất sử dụng và hướng dẫn điều trị được bác sĩ kê trên hệ thống ClinicMS.",
   );
 
   useEffect(() => {
@@ -20,7 +25,9 @@ function PrescriptionsPage() {
         setItems(response.data?.data || []);
       })
       .catch((error) => {
-        setErrorText(getErrorMessage(error, "Không tải được đơn thuốc."));
+        setErrorText(
+          getErrorMessage(error, "Không tải được đơn thuốc điện tử."),
+        );
       })
       .finally(() => setLoading(false));
   }, []);
@@ -29,17 +36,20 @@ function PrescriptionsPage() {
     <div style={ui.page}>
       <section style={createHero(gradients.patient)}>
         <div style={ui.eyebrow}>Đơn thuốc điện tử</div>
-        <h1 style={ui.title}>Tra cứu thuốc đã kê và hướng dẫn sử dụng rõ ràng</h1>
+        <h1 style={ui.title}>
+          Tra cứu thuốc đã được kê, cách dùng và hướng dẫn điều trị theo từng hồ
+          sơ khám
+        </h1>
         <p style={ui.subtitle}>
-          Toàn bộ đơn thuốc được lưu theo từng hồ sơ khám để bạn đối chiếu tên
-          thuốc, liều dùng và chỉ dẫn của bác sĩ trong cùng một nơi.
+          Tất cả đơn thuốc được lưu cùng hồ sơ khám bệnh để bạn dễ theo dõi tên
+          thuốc, liều dùng, thời gian sử dụng và chỉ định từ bác sĩ phụ trách.
         </p>
       </section>
 
-      {loading && <div style={ui.stateCard}>Đang tải đơn thuốc...</div>}
+      {loading && <div style={ui.stateCard}>Đang tải đơn thuốc điện tử...</div>}
       {!loading && errorText && <div style={ui.errorCard}>{errorText}</div>}
       {!loading && !errorText && items.length === 0 && (
-        <div style={ui.stateCard}>Bạn chưa có đơn thuốc nào.</div>
+        <div style={ui.stateCard}>Bạn chưa có đơn thuốc điện tử nào.</div>
       )}
 
       {!loading && !errorText && items.length > 0 && (
@@ -56,18 +66,24 @@ function PrescriptionsPage() {
               <div style={createAutoGrid(140)}>
                 <div style={ui.panelSoft}>
                   <div style={ui.label}>Liều dùng</div>
-                  <div style={styles.valueText}>{item.dosage || "Chưa cập nhật"}</div>
+                  <div style={styles.valueText}>
+                    {item.dosage || "Chưa cập nhật"}
+                  </div>
                 </div>
                 <div style={ui.panelSoft}>
-                  <div style={ui.label}>Tần suất</div>
-                  <div style={styles.valueText}>{item.frequency || "Chưa cập nhật"}</div>
+                  <div style={ui.label}>Tần suất sử dụng</div>
+                  <div style={styles.valueText}>
+                    {item.frequency || "Chưa cập nhật"}
+                  </div>
                 </div>
                 <div style={ui.panelSoft}>
-                  <div style={ui.label}>Thời gian dùng</div>
-                  <div style={styles.valueText}>{item.duration || "Chưa cập nhật"}</div>
+                  <div style={ui.label}>Thời gian dùng thuốc</div>
+                  <div style={styles.valueText}>
+                    {item.duration || "Chưa cập nhật"}
+                  </div>
                 </div>
                 <div style={ui.panelSoft}>
-                  <div style={ui.label}>Hồ sơ</div>
+                  <div style={ui.label}>Hồ sơ liên quan</div>
                   <div style={styles.valueText}>#{item.medicalRecordId}</div>
                 </div>
               </div>
@@ -75,7 +91,8 @@ function PrescriptionsPage() {
               <div style={styles.instructionsBox}>
                 <div style={ui.label}>Hướng dẫn sử dụng</div>
                 <p style={styles.instructionsText}>
-                  {item.instructions || "Chưa có hướng dẫn sử dụng."}
+                  {item.instructions ||
+                    "Bác sĩ chưa bổ sung hướng dẫn sử dụng cụ thể."}
                 </p>
               </div>
             </article>

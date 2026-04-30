@@ -17,6 +17,15 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @PostMapping("/api/patient/appointments/{appointmentId}/deposit/mock")
+    public ResponseEntity<?> createMockPayment(@PathVariable Long appointmentId, Authentication authentication) {
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Khởi tạo thanh toán mô phỏng thành công",
+                paymentService.createMockPayment(authentication.getName(), appointmentId)
+        ));
+    }
+
     @PostMapping("/api/patient/appointments/{appointmentId}/deposit/momo")
     public ResponseEntity<?> createMomoPayment(@PathVariable Long appointmentId, Authentication authentication) {
         return ResponseEntity.ok(new ApiResponse<>(

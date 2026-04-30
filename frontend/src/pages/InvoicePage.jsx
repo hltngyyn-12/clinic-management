@@ -12,7 +12,7 @@ function InvoicePage() {
 
   usePageMeta(
     "Hóa đơn lịch khám",
-    "Xem và in hóa đơn đặt cọc lịch khám sau khi thanh toán MoMo ATM test tại ClinicMS.",
+    "Xem và in hóa đơn đặt cọc lịch khám sau khi thanh toán tại ClinicMS, bao gồm MoMo ATM test và thanh toán nội bộ.",
   );
 
   useEffect(() => {
@@ -47,7 +47,7 @@ function InvoicePage() {
           <div style={ui.eyebrow}>Hóa đơn thanh toán</div>
           <h1 style={ui.title}>Hóa đơn đặt cọc lịch khám</h1>
           <p style={ui.subtitle}>
-            Lưu trữ thông tin giao dịch MoMo ATM và in hóa đơn để đối chiếu khi đến
+            Lưu trữ đầy đủ thông tin giao dịch để bạn đối chiếu nhanh khi cần làm thủ tục tại
             phòng khám.
           </p>
         </div>
@@ -62,7 +62,7 @@ function InvoicePage() {
             <div>
               <h2 style={ui.sectionTitle}>Chi tiết hóa đơn</h2>
               <p style={ui.sectionHint}>
-                Hóa đơn được tạo sau khi MoMo ATM xác nhận giao dịch thành công.
+                Hóa đơn được tạo sau khi hệ thống xác nhận giao dịch đặt cọc thành công.
               </p>
             </div>
             <div style={styles.invoiceBadge}>{invoice.invoiceNumber}</div>
@@ -108,7 +108,7 @@ function InvoicePage() {
               <div style={styles.value}>{invoice.transactionRef || "Không có"}</div>
             </div>
             <div style={ui.panelSoft}>
-              <div style={ui.label}>Mã giao dịch MoMo</div>
+              <div style={ui.label}>Mã giao dịch nhà cung cấp</div>
               <div style={styles.value}>
                 {invoice.providerTransactionNo || "Đang cập nhật"}
               </div>

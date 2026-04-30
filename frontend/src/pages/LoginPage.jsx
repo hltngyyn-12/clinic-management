@@ -16,8 +16,8 @@ function LoginPage() {
   const navigate = useNavigate();
 
   usePageMeta(
-    "Đăng nhập",
-    "Đăng nhập ClinicMS để truy cập cổng bệnh nhân, không gian làm việc của bác sĩ hoặc khu vực quản trị phòng khám.",
+    "Đăng nhập hệ thống",
+    "Đăng nhập ClinicMS để truy cập cổng bệnh nhân, không gian làm việc của bác sĩ hoặc khu vực quản trị vận hành phòng khám trên hệ thống.",
   );
 
   const handleChange = (event) => {
@@ -29,9 +29,12 @@ function LoginPage() {
 
   const normalizeRole = (user) => {
     if (!user) return null;
-    if (typeof user.role === "string" && user.role.trim()) return user.role.trim().toUpperCase();
-    if (Array.isArray(user.roles) && user.roles.length > 0) return String(user.roles[0]).replace("ROLE_", "").toUpperCase();
-    if (Array.isArray(user.authorities) && user.authorities.length > 0) return String(user.authorities[0]).replace("ROLE_", "").toUpperCase();
+    if (typeof user.role === "string" && user.role.trim())
+      return user.role.trim().toUpperCase();
+    if (Array.isArray(user.roles) && user.roles.length > 0)
+      return String(user.roles[0]).replace("ROLE_", "").toUpperCase();
+    if (Array.isArray(user.authorities) && user.authorities.length > 0)
+      return String(user.authorities[0]).replace("ROLE_", "").toUpperCase();
     return null;
   };
 
@@ -39,23 +42,26 @@ function LoginPage() {
     event.preventDefault();
 
     if (!form.usernameOrEmail.trim() || !form.password.trim()) {
-      alert("Vui lòng nhập đầy đủ tài khoản và mật khẩu.");
+      alert("Vui lòng nhập tên đăng nhập hoặc email và mật khẩu.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const loginRes = await axios.post("http://localhost:8080/api/auth/login", {
-        usernameOrEmail: form.usernameOrEmail.trim(),
-        password: form.password.trim(),
-      });
+      const loginRes = await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          usernameOrEmail: form.usernameOrEmail.trim(),
+          password: form.password.trim(),
+        },
+      );
 
       const loginData = loginRes.data?.data || loginRes.data;
       const token = loginData?.token;
 
       if (!token) {
-        alert("Hệ thống chưa trả về token đăng nhập.");
+        alert("Hệ thống chưa trả về thông tin phiên đăng nhập.");
         return;
       }
 
@@ -95,23 +101,32 @@ function LoginPage() {
     <div style={styles.page}>
       <div style={styles.shell}>
         <section style={styles.hero}>
-          <div style={styles.heroBadge}>Cổng truy cập an toàn</div>
-          <h1 style={styles.heroTitle}>Không gian đăng nhập dành cho hệ thống khám chữa bệnh số hóa</h1>
+          <div style={styles.heroBadge}>Truy cập an toàn</div>
+          <h1 style={styles.heroTitle}>
+            Đăng nhập để sử dụng đầy đủ các chức năng dành cho bệnh nhân, bác sĩ
+            và quản trị viên
+          </h1>
           <p style={styles.heroText}>
-            Từ đây, bệnh nhân có thể đặt lịch và theo dõi kết quả điều trị; bác sĩ xử lý hồ sơ bệnh án;
-            quản trị viên vận hành toàn bộ phòng khám trên một nền tảng thống nhất.
+            Từ cùng một tài khoản hệ thống, mỗi vai trò sẽ được đưa đến đúng khu
+            vực làm việc của mình: bệnh nhân quản lý lịch hẹn và hồ sơ điều trị,
+            bác sĩ xử lý ca khám trong ngày, còn quản trị viên điều hành dữ liệu
+            và hoạt động phòng khám.
           </p>
           <div style={styles.featureList}>
-            <span style={styles.featureItem}>Lịch khám trực tuyến</span>
-            <span style={styles.featureItem}>Hồ sơ bệnh án số</span>
-            <span style={styles.featureItem}>Báo cáo vận hành</span>
+            <span style={styles.featureItem}>Đặt lịch khám trực tuyến</span>
+            <span style={styles.featureItem}>Hồ sơ bệnh án điện tử</span>
+            <span style={styles.featureItem}>
+              Bảng điều hành vận hành phòng khám
+            </span>
           </div>
         </section>
 
         <section style={styles.card}>
           <div style={styles.cardHeader}>
             <h2 style={styles.title}>Đăng nhập hệ thống</h2>
-            <p style={styles.subtitle}>Nhập thông tin tài khoản để truy cập đúng giao diện theo vai trò của bạn.</p>
+            <p style={styles.subtitle}>
+              Nhập thông tin tài khoản để tiếp tục làm việc trên ClinicMS.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} style={styles.form}>
@@ -122,7 +137,7 @@ function LoginPage() {
                 name="usernameOrEmail"
                 value={form.usernameOrEmail}
                 onChange={handleChange}
-                placeholder="Ví dụ: patient.demo.1 hoặc email"
+                placeholder="Nhập tên đăng nhập hoặc email đã đăng ký"
                 style={styles.input}
               />
             </div>
@@ -134,7 +149,7 @@ function LoginPage() {
                 name="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder="Nhập mật khẩu"
+                placeholder="Nhập mật khẩu của bạn"
                 style={styles.input}
               />
             </div>
@@ -147,7 +162,7 @@ function LoginPage() {
           <p style={styles.footerText}>
             Chưa có tài khoản?{" "}
             <span style={styles.linkText} onClick={() => navigate("/register")}>
-              Tạo tài khoản mới
+              Tạo tài khoản
             </span>
           </p>
         </section>

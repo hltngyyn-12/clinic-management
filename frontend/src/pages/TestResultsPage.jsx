@@ -16,7 +16,7 @@ function TestResultsPage() {
 
   usePageMeta(
     "Kết quả xét nghiệm",
-    "Theo dõi yêu cầu xét nghiệm, trạng thái xử lý và nội dung kết luận trực tuyến.",
+    "Theo dõi yêu cầu xét nghiệm, trạng thái xử lý, kết quả và kết luận chuyên môn trực tuyến trên hệ thống ClinicMS.",
   );
 
   useEffect(() => {
@@ -26,7 +26,9 @@ function TestResultsPage() {
         setItems(response.data?.data || []);
       })
       .catch((error) => {
-        setErrorText(getErrorMessage(error, "Không tải được kết quả xét nghiệm."));
+        setErrorText(
+          getErrorMessage(error, "Không tải được kết quả xét nghiệm."),
+        );
       })
       .finally(() => setLoading(false));
   }, []);
@@ -35,17 +37,25 @@ function TestResultsPage() {
     <div style={ui.page}>
       <section style={createHero(gradients.patient)}>
         <div style={ui.eyebrow}>Xét nghiệm trực tuyến</div>
-        <h1 style={ui.title}>Theo dõi trạng thái xét nghiệm và kết luận trên hệ thống</h1>
+        <h1 style={ui.title}>
+          Theo dõi trạng thái xét nghiệm, kết quả và kết luận chuyên môn ngay
+          trên hệ thống
+        </h1>
         <p style={ui.subtitle}>
-          Kết quả xét nghiệm được cập nhật theo từng hồ sơ khám, giúp bạn nắm nhanh
-          tiến độ xử lý và nội dung kết luận của bác sĩ.
+          Kết quả xét nghiệm được liên kết với từng hồ sơ khám bệnh, giúp bạn
+          nắm tiến độ xử lý, xem thông tin trả về và đọc kết luận chuyên môn một
+          cách thuận tiện.
         </p>
       </section>
 
-      {loading && <div style={ui.stateCard}>Đang tải dữ liệu xét nghiệm...</div>}
+      {loading && (
+        <div style={ui.stateCard}>Đang tải dữ liệu xét nghiệm...</div>
+      )}
       {!loading && errorText && <div style={ui.errorCard}>{errorText}</div>}
       {!loading && !errorText && items.length === 0 && (
-        <div style={ui.stateCard}>Bạn chưa có dữ liệu xét nghiệm nào.</div>
+        <div style={ui.stateCard}>
+          Bạn chưa có dữ liệu xét nghiệm nào trên hệ thống.
+        </div>
       )}
 
       {!loading && !errorText && items.length > 0 && (
@@ -55,7 +65,7 @@ function TestResultsPage() {
               <div style={styles.topRow}>
                 <div>
                   <h3 style={styles.cardTitle}>{item.testName}</h3>
-                  <p style={styles.meta}>Bác sĩ: {item.doctorName}</p>
+                  <p style={styles.meta}>Bác sĩ phụ trách: {item.doctorName}</p>
                 </div>
                 <div
                   style={createStatusPill(
@@ -69,19 +79,21 @@ function TestResultsPage() {
               </div>
 
               <div style={styles.referenceRow}>
-                <div style={ui.label}>Hồ sơ khám liên quan</div>
+                <div style={ui.label}>Hồ sơ khám bệnh liên quan</div>
                 <div style={styles.referenceValue}>#{item.medicalRecordId}</div>
               </div>
 
               <div style={styles.resultGrid}>
                 <div style={ui.panelSoft}>
-                  <div style={ui.label}>Kết quả</div>
-                  <p style={styles.resultText}>{item.result || "Đang chờ cập nhật."}</p>
+                  <div style={ui.label}>Kết quả xét nghiệm</div>
+                  <p style={styles.resultText}>
+                    {item.result || "Đang chờ cập nhật kết quả."}
+                  </p>
                 </div>
                 <div style={ui.panelSoft}>
-                  <div style={ui.label}>Kết luận</div>
+                  <div style={ui.label}>Kết luận chuyên môn</div>
                   <p style={styles.resultText}>
-                    {item.conclusion || "Đang chờ cập nhật."}
+                    {item.conclusion || "Đang chờ bác sĩ cập nhật kết luận."}
                   </p>
                 </div>
               </div>

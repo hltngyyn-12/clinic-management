@@ -10,7 +10,6 @@ public class CreatePrescriptionRequest {
     @NotNull
     private Long medicalRecordId;
 
-    @NotBlank
     private String medicineName;
 
     @NotNull

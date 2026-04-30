@@ -4,6 +4,7 @@ import com.clinic.backend.dto.common.ApiResponse;
 import com.clinic.backend.dto.patient.AppointmentBookingRequest;
 import com.clinic.backend.dto.patient.CreateReviewRequest;
 import com.clinic.backend.dto.patient.DepositPaymentRequest;
+import com.clinic.backend.dto.patient.UpdatePatientProfileRequest;
 import com.clinic.backend.service.PatientPortalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -102,6 +103,27 @@ public class PatientController {
                 true,
                 "Lấy danh sách đánh giá thành công",
                 patientPortalService.getMyReviews(authentication.getName())
+        ));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(Authentication authentication) {
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Lấy hồ sơ bệnh nhân thành công",
+                patientPortalService.getProfile(authentication.getName())
+        ));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(
+            @Valid @RequestBody UpdatePatientProfileRequest request,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Cập nhật hồ sơ bệnh nhân thành công",
+                patientPortalService.updateProfile(authentication.getName(), request)
         ));
     }
 }

@@ -42,6 +42,30 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
+    public PaymentInitResponse createMockPayment(String username, Long appointmentId) {
+        Appointment appointment = getOwnedAppointment(username, appointmentId);
+
+        if ("PAID".equalsIgnoreCase(safeText(appointment.getPaymentStatus()))) {
+            throw new ApiException("Lịch hẹn này đã được thanh toán đặt cọc.");
+        }
+        if ("CANCELLED".equalsIgnoreCase(safeText(appointment.getStatus()))) {
+            throw new ApiException("Không thể thanh toán cho lịch đã hủy.");
+        }
+
+        PaymentTransaction transaction = createSuccessfulTransaction(
+                appointment,
+                "MOCK",
+                buildMockTransactionRef(appointment.getId()),
+                buildMockProviderOrderId(appointment.getId()),
+                "MOCK-" + appointment.getId(),
+                "Thanh toán mô phỏng thành công."
+        );
+
+        return new PaymentInitResponse("MOCK", appointment.getId(), transaction.getTransactionRef(), "");
+    }
+
+    @Override
+    @Transactional
     public PaymentInitResponse createMomoPayment(String username, Long appointmentId) {
         Appointment appointment = getOwnedAppointment(username, appointmentId);
 
@@ -205,12 +229,8 @@ public class PaymentServiceImpl implements PaymentService {
             transaction.setPaidAt(LocalDateTime.now());
             paymentTransactionRepository.save(transaction);
 
-            Appointment appointment = transaction.getAppointment();
-            appointment.setPaymentStatus("PAID");
-            appointment.setDepositAmount(transaction.getAmount());
-            appointmentRepository.save(appointment);
-
-            ensureInvoice(transaction, appointment);
+            markAppointmentPaid(transaction.getAppointment(), transaction.getAmount());
+            ensureInvoice(transaction, transaction.getAppointment(), "MOMO");
         }
 
         return new PaymentProcessingResult(
@@ -221,7 +241,7 @@ public class PaymentServiceImpl implements PaymentService {
         );
     }
 
-    private void ensureInvoice(PaymentTransaction transaction, Appointment appointment) {
+    private void ensureInvoice(PaymentTransaction transaction, Appointment appointment, String paymentMethod) {
         if (appointmentInvoiceRepository.findByAppointmentId(appointment.getId()).isPresent()) {
             return;
         }
@@ -234,9 +254,45 @@ public class PaymentServiceImpl implements PaymentService {
         invoice.setDoctorName(appointment.getDoctor() != null ? appointment.getDoctor().getName() : "Bác sĩ");
         invoice.setSpecialty(appointment.getDoctor() != null ? safeText(appointment.getDoctor().getSpecialty()) : "");
         invoice.setAmount(transaction.getAmount());
-        invoice.setPaymentMethod("MOMO");
+        invoice.setPaymentMethod(paymentMethod);
         invoice.setPaymentStatus("PAID");
         appointmentInvoiceRepository.save(invoice);
+    }
+
+    private PaymentTransaction createSuccessfulTransaction(
+            Appointment appointment,
+            String provider,
+            String transactionRef,
+            String providerOrderId,
+            String providerTransactionNo,
+            String message
+    ) {
+        long amount = Math.round(appointment.getDepositAmount() == null ? 100000d : appointment.getDepositAmount());
+
+        PaymentTransaction transaction = new PaymentTransaction();
+        transaction.setAppointment(appointment);
+        transaction.setPatient(appointment.getPatient());
+        transaction.setProvider(provider);
+        transaction.setTransactionRef(transactionRef);
+        transaction.setProviderOrderId(providerOrderId);
+        transaction.setProviderTransactionNo(providerTransactionNo);
+        transaction.setAmount((double) amount);
+        transaction.setStatus("SUCCESS");
+        transaction.setResponseCode("0");
+        transaction.setMessage(message);
+        transaction.setPaidAt(LocalDateTime.now());
+        paymentTransactionRepository.save(transaction);
+
+        markAppointmentPaid(appointment, transaction.getAmount());
+        ensureInvoice(transaction, appointment, provider);
+
+        return transaction;
+    }
+
+    private void markAppointmentPaid(Appointment appointment, Double amount) {
+        appointment.setPaymentStatus("PAID");
+        appointment.setDepositAmount(amount);
+        appointmentRepository.save(appointment);
     }
 
     private void markFailedTransaction(PaymentTransaction transaction, String responseCode, String message) {
@@ -312,6 +368,14 @@ public class PaymentServiceImpl implements PaymentService {
 
     private String buildProviderOrderId(Long appointmentId) {
         return "APT" + appointmentId + "M" + System.currentTimeMillis();
+    }
+
+    private String buildMockTransactionRef(Long appointmentId) {
+        return "MOCKAPT" + appointmentId + System.currentTimeMillis();
+    }
+
+    private String buildMockProviderOrderId(Long appointmentId) {
+        return "MOCKAPT" + appointmentId + "M" + System.currentTimeMillis();
     }
 
     private String buildOrderInfo(Long appointmentId) {

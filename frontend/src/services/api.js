@@ -32,7 +32,7 @@ api.interceptors.response.use(
   },
 );
 
-export const getErrorMessage = (error, fallback = "Có lỗi xảy ra") => {
+export const getErrorMessage = (error, fallback = "Đã xảy ra lỗi. Vui lòng thử lại.") => {
   return (
     error?.response?.data?.message ||
     error?.response?.data?.error ||

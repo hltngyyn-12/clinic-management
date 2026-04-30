@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import usePageMeta from "../hooks/usePageMeta";
 import api, { getErrorMessage } from "../services/api";
+import { confirmAction } from "../utils/feedbackUx";
 import {
   createAutoGrid,
   createHero,
@@ -37,7 +38,7 @@ function AdminDoctorsPage() {
 
   usePageMeta(
     "Quản lý bác sĩ",
-    "Tạo mới, cập nhật và theo dõi tài khoản bác sĩ trong cổng quản trị ClinicMS.",
+    "Tạo mới, cập nhật và theo dõi thông tin hành nghề của bác sĩ trong khu vực quản trị ClinicMS.",
   );
 
   useEffect(() => {
@@ -54,7 +55,7 @@ function AdminDoctorsPage() {
       setDoctors(doctorRes.data?.data || []);
       setSpecialties(specialtyRes.data?.data || []);
     } catch (error) {
-      alert(getErrorMessage(error, "Không tải được dữ liệu bác sĩ."));
+      alert(getErrorMessage(error, "Không thể tải danh sách bác sĩ."));
     } finally {
       setLoading(false);
     }
@@ -108,43 +109,51 @@ function AdminDoctorsPage() {
 
       if (editingId) {
         await api.put(`/api/admin/doctors/${editingId}`, payload);
-        alert("Cập nhật bác sĩ thành công.");
+        alert("Đã cập nhật thông tin bác sĩ.");
       } else {
         await api.post("/api/admin/doctors", payload);
-        alert("Tạo bác sĩ mới thành công.");
+        alert("Đã tạo tài khoản bác sĩ.");
       }
 
       resetForm();
       await loadData();
     } catch (error) {
-      alert(getErrorMessage(error, "Lưu bác sĩ thất bại."));
+      alert(getErrorMessage(error, "Không thể lưu thông tin bác sĩ."));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (doctorId) => {
-    if (!window.confirm("Bạn có chắc muốn xóa bác sĩ này?")) return;
+    const confirmed = await confirmAction("Bạn có chắc muốn xóa bác sĩ này khỏi hệ thống?", {
+      title: "Xóa bác sĩ",
+      confirmLabel: "Xóa bác sĩ",
+    });
+    if (!confirmed) return;
+
     try {
       await api.delete(`/api/admin/doctors/${doctorId}`);
-      alert("Xóa bác sĩ thành công.");
+      alert("Đã xóa bác sĩ.");
       if (editingId === doctorId) {
         resetForm();
       }
       await loadData();
     } catch (error) {
-      alert(getErrorMessage(error, "Xóa bác sĩ thất bại."));
+      alert(getErrorMessage(error, "Không thể xóa bác sĩ."));
     }
   };
 
   return (
     <div style={ui.page}>
       <section style={createHero(gradients.admin)}>
-        <div style={ui.eyebrow}>Quản trị đội ngũ y khoa</div>
-        <h1 style={ui.title}>Quản lý tài khoản, thông tin hành nghề và lịch làm việc của bác sĩ</h1>
+        <div style={ui.eyebrow}>Quản trị đội ngũ bác sĩ</div>
+        <h1 style={ui.title}>
+          Quản lý tài khoản, hồ sơ hành nghề và lịch làm việc của bác sĩ trên hệ thống
+        </h1>
         <p style={ui.subtitle}>
-          Quản trị viên có thể tạo mới, chỉnh sửa, khóa hoặc xóa tài khoản bác sĩ trong
-          một không gian quản trị thống nhất và rõ ràng.
+          Khu vực này giúp quản trị viên duy trì dữ liệu bác sĩ chính xác, từ thông
+          tin cá nhân, chuyên khoa, thời gian làm việc đến trạng thái hoạt động của
+          từng tài khoản.
         </p>
       </section>
 
@@ -152,20 +161,20 @@ function AdminDoctorsPage() {
         <section style={ui.panel}>
           <div style={ui.sectionHeader}>
             <div>
-              <h2 style={ui.sectionTitle}>Danh sách bác sĩ</h2>
+              <h2 style={ui.sectionTitle}>Danh sách bác sĩ hiện có</h2>
               <p style={ui.sectionHint}>
-                Theo dõi toàn bộ bác sĩ đang hoạt động trong hệ thống.
+                Theo dõi và rà soát thông tin hành nghề của toàn bộ bác sĩ đang được quản lý trên hệ thống.
               </p>
             </div>
             <button type="button" onClick={loadData} style={ui.secondaryButton}>
-              Tải lại
+              Tải lại danh sách
             </button>
           </div>
 
           {loading ? (
             <p style={ui.muted}>Đang tải danh sách bác sĩ...</p>
           ) : doctors.length === 0 ? (
-            <p style={ui.muted}>Chưa có bác sĩ nào trong hệ thống.</p>
+            <p style={ui.muted}>Hiện chưa có bác sĩ nào trong hệ thống.</p>
           ) : (
             <div style={{ display: "grid", gap: "14px" }}>
               {doctors.map((doctor) => (
@@ -194,7 +203,7 @@ function AdminDoctorsPage() {
                       <span>{doctor.roomNumber || "Chưa cập nhật"}</span>
                     </div>
                     <div style={styles.inlineInfo}>
-                      <span style={ui.label}>Slot</span>
+                      <span style={ui.label}>Thời lượng slot</span>
                       <span>{doctor.slotDurationMinutes || 0} phút</span>
                     </div>
                   </div>
@@ -216,9 +225,11 @@ function AdminDoctorsPage() {
         <section style={ui.panel}>
           <div style={ui.sectionHeader}>
             <div>
-              <h2 style={ui.sectionTitle}>{editingId ? "Cập nhật bác sĩ" : "Tạo bác sĩ mới"}</h2>
+              <h2 style={ui.sectionTitle}>
+                {editingId ? "Cập nhật thông tin bác sĩ" : "Tạo mới tài khoản bác sĩ"}
+              </h2>
               <p style={ui.sectionHint}>
-                Điền thông tin tài khoản, chuyên khoa và thời gian tiếp nhận khám.
+                Điền đầy đủ thông tin để tài khoản bác sĩ có thể sử dụng ngay và hiển thị chính xác trên trang đặt lịch của bệnh nhân.
               </p>
             </div>
             {editingId ? (
@@ -231,9 +242,9 @@ function AdminDoctorsPage() {
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={createAutoGrid(220)}>
               <input name="username" value={form.username} onChange={handleChange} placeholder="Tên đăng nhập" style={ui.input} />
-              <input name="email" value={form.email} onChange={handleChange} placeholder="Email" style={ui.input} />
-              <input type="password" name="password" value={form.password} onChange={handleChange} placeholder={editingId ? "Mật khẩu mới nếu cần đổi" : "Mật khẩu"} style={ui.input} />
-              <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Họ và tên" style={ui.input} />
+              <input name="email" value={form.email} onChange={handleChange} placeholder="Email bác sĩ" style={ui.input} />
+              <input type="password" name="password" value={form.password} onChange={handleChange} placeholder={editingId ? "Nhập mật khẩu mới nếu cần thay đổi" : "Mật khẩu đăng nhập"} style={ui.input} />
+              <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Họ và tên bác sĩ" style={ui.input} />
               <input name="phone" value={form.phone} onChange={handleChange} placeholder="Số điện thoại" style={ui.input} />
               <select name="specialtyId" value={form.specialtyId} onChange={handleChange} style={ui.input}>
                 <option value="">Chọn chuyên khoa</option>
@@ -246,28 +257,32 @@ function AdminDoctorsPage() {
               <input type="number" name="experience" value={form.experience} onChange={handleChange} placeholder="Số năm kinh nghiệm" style={ui.input} />
               <input name="degree" value={form.degree} onChange={handleChange} placeholder="Học vị / bằng cấp" style={ui.input} />
               <input name="roomNumber" value={form.roomNumber} onChange={handleChange} placeholder="Số phòng khám" style={ui.input} />
-              <input name="workingStart" value={form.workingStart} onChange={handleChange} placeholder="Giờ bắt đầu" style={ui.input} />
-              <input name="workingEnd" value={form.workingEnd} onChange={handleChange} placeholder="Giờ kết thúc" style={ui.input} />
-              <input type="number" name="slotDurationMinutes" value={form.slotDurationMinutes} onChange={handleChange} placeholder="Thời lượng slot" style={ui.input} />
-              <input name="consultationFee" value={form.consultationFee} onChange={handleChange} placeholder="Phí tư vấn" style={ui.input} />
+              <input name="workingStart" value={form.workingStart} onChange={handleChange} placeholder="Giờ bắt đầu làm việc" style={ui.input} />
+              <input name="workingEnd" value={form.workingEnd} onChange={handleChange} placeholder="Giờ kết thúc làm việc" style={ui.input} />
+              <input type="number" name="slotDurationMinutes" value={form.slotDurationMinutes} onChange={handleChange} placeholder="Thời lượng mỗi slot khám" style={ui.input} />
+              <input name="consultationFee" value={form.consultationFee} onChange={handleChange} placeholder="Phí tư vấn / khám" style={ui.input} />
             </div>
 
             <textarea
               name="bio"
               value={form.bio}
               onChange={handleChange}
-              placeholder="Giới thiệu chuyên môn và thế mạnh của bác sĩ"
+              placeholder="Giới thiệu chuyên môn, thế mạnh điều trị và kinh nghiệm hành nghề của bác sĩ"
               style={ui.textarea}
             />
 
             <label style={ui.checkboxRow}>
               <input type="checkbox" name="active" checked={form.active} onChange={handleChange} />
-              Kích hoạt tài khoản bác sĩ
+              Kích hoạt tài khoản bác sĩ trên hệ thống
             </label>
 
             <div style={ui.actionRow}>
               <button type="submit" style={ui.primaryButton} disabled={saving}>
-                {saving ? "Đang lưu..." : editingId ? "Cập nhật bác sĩ" : "Tạo bác sĩ"}
+                {saving
+                  ? "Đang lưu dữ liệu..."
+                  : editingId
+                    ? "Cập nhật bác sĩ"
+                    : "Tạo tài khoản bác sĩ"}
               </button>
             </div>
           </form>

@@ -18,7 +18,7 @@ function RegisterPage() {
 
   usePageMeta(
     "Đăng ký tài khoản",
-    "Tạo tài khoản bệnh nhân trên ClinicMS để đặt lịch khám online, xem đơn thuốc điện tử và theo dõi kết quả xét nghiệm.",
+    "Tạo tài khoản trên ClinicMS để đặt lịch khám trực tuyến, thanh toán đặt cọc, xem đơn thuốc, kết quả xét nghiệm và lịch sử khám bệnh.",
   );
 
   const handleChange = (event) => {
@@ -38,7 +38,10 @@ function RegisterPage() {
 
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:8080/api/auth/register", form);
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/register",
+        form,
+      );
       alert(response.data?.message || "Tạo tài khoản thành công.");
       navigate("/login");
     } catch (error) {
@@ -52,18 +55,51 @@ function RegisterPage() {
     <div style={styles.page}>
       <div style={styles.shell}>
         <section style={styles.card}>
-          <div style={styles.kicker}>Đăng ký tài khoản mới</div>
-          <h1 style={styles.title}>Tạo tài khoản bệnh nhân để bắt đầu sử dụng dịch vụ trực tuyến</h1>
+          <div style={styles.kicker}>Tạo tài khoản mới</div>
+          <h1 style={styles.title}>
+            Đăng ký tài khoản để chủ động đặt lịch và theo dõi quá trình điều
+            trị
+          </h1>
           <p style={styles.subtitle}>
-            Sau khi đăng ký, bạn có thể đặt lịch khám online, thanh toán đặt cọc, xem lịch sử khám và nhận kết quả xét nghiệm ngay trên hệ thống.
+            Sau khi đăng ký, bạn có thể tự tạo lịch hẹn, xem hồ sơ khám bệnh,
+            theo dõi đơn thuốc và nhận kết quả xét nghiệm trực tuyến trên cùng
+            một tài khoản.
           </p>
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formGrid}>
-              <input type="text" name="username" placeholder="Tên đăng nhập" value={form.username} onChange={handleChange} style={styles.input} />
-              <input type="text" name="fullName" placeholder="Họ và tên" value={form.fullName} onChange={handleChange} style={styles.input} />
-              <input type="email" name="email" placeholder="Địa chỉ email" value={form.email} onChange={handleChange} style={styles.input} />
-              <input type="password" name="password" placeholder="Mật khẩu" value={form.password} onChange={handleChange} style={styles.input} />
+              <input
+                type="text"
+                name="username"
+                placeholder="Tên đăng nhập"
+                value={form.username}
+                onChange={handleChange}
+                style={styles.input}
+              />
+              <input
+                type="text"
+                name="fullName"
+                placeholder="Họ và tên"
+                value={form.fullName}
+                onChange={handleChange}
+                style={styles.input}
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Địa chỉ email"
+                value={form.email}
+                onChange={handleChange}
+                style={styles.input}
+              />
+              <input
+                type="password"
+                name="password"
+                placeholder="Mật khẩu"
+                value={form.password}
+                onChange={handleChange}
+                style={styles.input}
+              />
             </div>
 
             <button style={styles.button} disabled={loading}>
@@ -81,13 +117,18 @@ function RegisterPage() {
 
         <section style={styles.sideCard}>
           <div style={styles.sideBadge}>Lợi ích khi sử dụng ClinicMS</div>
-          <h2 style={styles.sideTitle}>Một trải nghiệm bệnh nhân gọn gàng, tin cậy và dễ theo dõi</h2>
+          <h2 style={styles.sideTitle}>
+            Một tài khoản duy nhất để theo dõi toàn bộ hành trình khám bệnh
+          </h2>
           <ul style={styles.list}>
-            <li>Đặt lịch theo bác sĩ, ngày và khung giờ mong muốn</li>
-            <li>Thanh toán đặt cọc cho lịch hẹn trực tuyến</li>
-            <li>Xem lại lịch sử khám và chẩn đoán điều trị</li>
-            <li>Tra cứu đơn thuốc điện tử mọi lúc</li>
-            <li>Nhận kết quả xét nghiệm online và đánh giá bác sĩ sau khám</li>
+            <li>Đặt lịch khám theo bác sĩ, ngày khám và khung giờ mong muốn</li>
+            <li>
+              Theo dõi trạng thái lịch hẹn và hoàn tất thanh toán đặt cọc trực
+              tuyến
+            </li>
+            <li>Tra cứu hồ sơ khám bệnh, chẩn đoán và lịch tái khám khi cần</li>
+            <li>Xem đơn thuốc điện tử và hướng dẫn sử dụng thuốc rõ ràng</li>
+            <li>Nhận kết quả xét nghiệm và gửi đánh giá sau buổi khám</li>
           </ul>
         </section>
       </div>

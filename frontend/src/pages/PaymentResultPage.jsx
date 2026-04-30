@@ -16,8 +16,8 @@ function PaymentResultPage() {
   const message = getMessageByCode(code, success);
 
   usePageMeta(
-    success ? "Thanh toán thành công" : "Thanh toán thất bại",
-    "Thông báo kết quả thanh toán đặt cọc MoMo ATM test cho lịch khám tại ClinicMS.",
+    success ? "Thanh toán thành công" : "Thanh toán chưa hoàn tất",
+    "Thông báo kết quả thanh toán đặt cọc lịch khám tại ClinicMS, bao gồm thanh toán MoMo ATM test và thanh toán nội bộ.",
   );
 
   return (
@@ -30,8 +30,8 @@ function PaymentResultPage() {
           </h1>
           <p style={ui.subtitle}>
             {success
-              ? "Hệ thống đã ghi nhận giao dịch MoMo ATM của bạn và cập nhật trạng thái lịch hẹn."
-              : "MoMo ATM chưa xác nhận giao dịch. Bạn có thể quay lại danh sách lịch hẹn để thử lại."}
+              ? "Hệ thống đã ghi nhận giao dịch đặt cọc và cập nhật trạng thái lịch hẹn của bạn."
+              : "Cổng thanh toán chưa xác nhận giao dịch. Bạn có thể quay lại danh sách lịch hẹn để thử lại hoặc chọn phương thức khác."}
           </p>
         </div>
       </section>
@@ -41,7 +41,7 @@ function PaymentResultPage() {
           <div>
             <h2 style={ui.sectionTitle}>Chi tiết giao dịch</h2>
             <p style={ui.sectionHint}>
-              Kiểm tra nhanh trạng thái, thông điệp trả về và đường dẫn tiếp theo.
+              Kiểm tra nhanh trạng thái xử lý, thông điệp phản hồi và bước tiếp theo.
             </p>
           </div>
           <div style={createStatusPill(success ? "success" : "warning")}>
@@ -84,6 +84,7 @@ function getMessageByCode(code, success) {
     "0": "Thanh toán đặt cọc thành công.",
     "1000": "Giao dịch đang được khởi tạo.",
     "1001": "Giao dịch thanh toán thất bại.",
+    "1002": "Giao dịch bị từ chối do nhà phát hành tài khoản thanh toán.",
     "1003": "Giao dịch bị hủy bởi người dùng.",
     "1005": "Tài khoản hoặc thẻ không đủ điều kiện thanh toán.",
     "1006": "Người dùng đã từ chối giao dịch.",
@@ -96,7 +97,7 @@ function getMessageByCode(code, success) {
 
   return success
     ? "Thanh toán đặt cọc thành công."
-    : "Thanh toán đặt cọc thất bại.";
+    : "Thanh toán đặt cọc chưa thành công.";
 }
 
 const styles = {

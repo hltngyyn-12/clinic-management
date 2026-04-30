@@ -14,8 +14,8 @@ function DoctorListPage() {
   const [reviewOpenByDoctor, setReviewOpenByDoctor] = useState({});
 
   usePageMeta(
-    "Đặt lịch khám",
-    "Xem danh sách bác sĩ, khung giờ còn trống và đặt lịch khám trực tuyến theo ngày giờ mong muốn.",
+    "Đặt lịch khám online",
+    "Tra cứu bác sĩ theo chuyên khoa, xem khung giờ còn trống và đặt lịch khám trực tuyến theo ngày phù hợp trên ClinicMS.",
   );
 
   useEffect(() => {
@@ -55,10 +55,10 @@ function DoctorListPage() {
         reason,
       });
 
-      alert("Đặt lịch thành công.");
+      alert("Đặt lịch khám thành công.");
       handleLoadSlots(doctorId);
     } catch (error) {
-      alert(getErrorMessage(error, "Đặt lịch thất bại."));
+      alert(getErrorMessage(error, "Đặt lịch khám thất bại."));
     }
   };
 
@@ -83,9 +83,13 @@ function DoctorListPage() {
       <section style={styles.hero}>
         <div>
           <div style={styles.eyebrow}>Đặt lịch khám trực tuyến</div>
-          <h1 style={styles.title}>Chọn bác sĩ phù hợp và giữ chỗ chỉ trong vài bước</h1>
+          <h1 style={styles.title}>
+            Chọn bác sĩ phù hợp và đặt lịch khám theo khung giờ còn trống
+          </h1>
           <p style={styles.subtitle}>
-            Xem bác sĩ còn lịch trống, chọn ngày khám, khung giờ mong muốn và gửi lý do thăm khám ngay trên hệ thống.
+            Bạn có thể xem danh sách bác sĩ theo chuyên khoa, kiểm tra lịch tiếp
+            nhận trong ngày và gửi lý do thăm khám trước khi tạo lịch hẹn. Toàn bộ
+            thông tin sẽ được đồng bộ vào hồ sơ khám của bạn trên hệ thống.
           </p>
         </div>
 
@@ -118,10 +122,12 @@ function DoctorListPage() {
                 </div>
               </div>
 
-              <div style={styles.infoLine}>Kinh nghiệm: {doctor.experience ?? 0} năm</div>
+              <div style={styles.infoLine}>
+                Kinh nghiệm khám chữa bệnh: {doctor.experience ?? 0} năm
+              </div>
 
               <textarea
-                placeholder="Lý do thăm khám"
+                placeholder="Nhập lý do thăm khám hoặc triệu chứng cần tư vấn"
                 value={bookingByDoctor[doctor.id]?.reason || ""}
                 onChange={(event) =>
                   setBookingByDoctor((prev) => ({
@@ -137,7 +143,7 @@ function DoctorListPage() {
 
               <div style={styles.actions}>
                 <button onClick={() => handleLoadSlots(doctor.id)} style={styles.primaryButton}>
-                  {slotLoadingByDoctor[doctor.id] ? "Đang tải..." : "Tải khung giờ"}
+                  {slotLoadingByDoctor[doctor.id] ? "Đang tải..." : "Xem khung giờ khám"}
                 </button>
                 <button onClick={() => toggleReviews(doctor.id)} style={styles.secondaryButton}>
                   {reviewOpenByDoctor[doctor.id] ? "Ẩn đánh giá" : "Xem đánh giá"}
@@ -146,7 +152,9 @@ function DoctorListPage() {
 
               <div style={styles.slotWrap}>
                 {(slotsByDoctor[doctor.id] || []).length === 0 ? (
-                  <p style={styles.emptyText}>Chưa tải khung giờ hoặc hiện không còn giờ trống.</p>
+                  <p style={styles.emptyText}>
+                    Chưa tải khung giờ hoặc hiện tại không còn lịch trống cho ngày đã chọn.
+                  </p>
                 ) : (
                   <div style={styles.slotGrid}>
                     {slotsByDoctor[doctor.id].map((slot) => (
@@ -165,7 +173,7 @@ function DoctorListPage() {
               {reviewOpenByDoctor[doctor.id] && (
                 <div style={styles.reviewBlock}>
                   {(reviewsByDoctor[doctor.id] || []).length === 0 ? (
-                    <p style={styles.emptyText}>Bác sĩ này chưa có đánh giá nào.</p>
+                    <p style={styles.emptyText}>Bác sĩ này chưa có đánh giá nào từ bệnh nhân.</p>
                   ) : (
                     reviewsByDoctor[doctor.id].map((review) => (
                       <div key={review.id} style={styles.reviewCard}>

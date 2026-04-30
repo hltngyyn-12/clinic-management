@@ -18,8 +18,8 @@ function MyAppointmentsPage() {
   const [reviewForms, setReviewForms] = useState({});
 
   usePageMeta(
-    "Lịch hẹn của tôi",
-    "Theo dõi lịch khám, thanh toán đặt cọc qua MoMo ATM test và gửi đánh giá bác sĩ trong cổng bệnh nhân của ClinicMS.",
+    "Lịch hẹn",
+    "Theo dõi lịch khám, thanh toán đặt cọc qua MoMo ATM test hoặc thanh toán nội bộ, đồng thời gửi đánh giá bác sĩ trong cổng bệnh nhân của ClinicMS.",
   );
 
   const loadAppointments = () => {
@@ -50,6 +50,19 @@ function MyAppointmentsPage() {
     [appointments],
   );
 
+  const handleMockPayment = async (appointment) => {
+    try {
+      await api.post(
+        `/api/patient/appointments/${appointment.id}/deposit/mock`,
+      );
+      alert("Đã thanh toán thành công.");
+      loadAppointments();
+      navigate(`/invoices/${appointment.id}`);
+    } catch (error) {
+      alert(getErrorMessage(error, "Không thể hoàn tất thanh toán."));
+    }
+  };
+
   const handlePayDeposit = async (appointment) => {
     try {
       const response = await api.post(
@@ -77,7 +90,7 @@ function MyAppointmentsPage() {
         comment: form.comment,
       });
 
-      alert("Gửi đánh giá thành công.");
+      alert("Đã gửi đánh giá thành công.");
       setReviewForms((prev) => ({
         ...prev,
         [appointmentId]: {
@@ -89,7 +102,7 @@ function MyAppointmentsPage() {
       }));
       loadAppointments();
     } catch (error) {
-      alert(getErrorMessage(error, "Gửi đánh giá thất bại."));
+      alert(getErrorMessage(error, "Không thể gửi đánh giá."));
     }
   };
 
@@ -104,11 +117,13 @@ function MyAppointmentsPage() {
           <div>
             <div style={ui.eyebrow}>Lịch hẹn bệnh nhân</div>
             <h1 style={ui.title}>
-              Quản lý lịch khám, đặt cọc và phản hồi sau điều trị
+              Theo dõi lịch khám, trạng thái đặt cọc và phản hồi sau điều trị
+              trên cùng một màn hình
             </h1>
             <p style={ui.subtitle}>
-              Tất cả lịch hẹn của bạn được hiển thị tập trung cùng trạng thái thanh
-              toán, lịch khám và biểu mẫu đánh giá để quá trình theo dõi minh bạch hơn.
+              Mọi lịch hẹn của bạn được sắp xếp tập trung cùng trạng thái thanh
+              toán, thông tin khám và phần đánh giá bác sĩ để việc theo dõi trở
+              nên rõ ràng, thuận tiện hơn.
             </p>
           </div>
 
@@ -155,7 +170,9 @@ function MyAppointmentsPage() {
                   </div>
                   <div
                     style={createStatusPill(
-                      appointment.paymentStatus === "PAID" ? "success" : "warning",
+                      appointment.paymentStatus === "PAID"
+                        ? "success"
+                        : "warning",
                     )}
                   >
                     {appointment.paymentStatus === "PAID"
@@ -167,7 +184,9 @@ function MyAppointmentsPage() {
                 <div style={createAutoGrid(150)}>
                   <div style={ui.panelSoft}>
                     <div style={ui.label}>Ngày khám</div>
-                    <div style={styles.dataValue}>{appointment.appointmentDate}</div>
+                    <div style={styles.dataValue}>
+                      {appointment.appointmentDate}
+                    </div>
                   </div>
                   <div style={ui.panelSoft}>
                     <div style={ui.label}>Giờ khám</div>
@@ -176,12 +195,17 @@ function MyAppointmentsPage() {
                   <div style={ui.panelSoft}>
                     <div style={ui.label}>Tiền đặt cọc</div>
                     <div style={styles.dataValue}>
-                      {Number(appointment.depositAmount || 0).toLocaleString("vi-VN")} đ
+                      {Number(appointment.depositAmount || 0).toLocaleString(
+                        "vi-VN",
+                      )}{" "}
+                      đ
                     </div>
                   </div>
                   <div style={ui.panelSoft}>
-                    <div style={ui.label}>Trạng thái</div>
-                    <div style={styles.dataValue}>{appointment.status || "PENDING"}</div>
+                    <div style={ui.label}>Trạng thái lịch hẹn</div>
+                    <div style={styles.dataValue}>
+                      {appointment.status || "PENDING"}
+                    </div>
                   </div>
                 </div>
 
@@ -195,10 +219,19 @@ function MyAppointmentsPage() {
                 <div style={ui.actionRow}>
                   {appointment.paymentStatus !== "PAID" && (
                     <button
-                      onClick={() => handlePayDeposit(appointment)}
+                      onClick={() => handleMockPayment(appointment)}
                       style={ui.primaryButton}
                     >
-                      Thanh toán đặt cọc qua MoMo ATM test
+                      Thanh toán
+                    </button>
+                  )}
+
+                  {appointment.paymentStatus !== "PAID" && (
+                    <button
+                      onClick={() => handlePayDeposit(appointment)}
+                      style={ui.secondaryButton}
+                    >
+                      Thanh toán qua MoMo
                     </button>
                   )}
 
@@ -211,22 +244,23 @@ function MyAppointmentsPage() {
                     </button>
                   )}
 
-                  {appointment.paymentStatus === "PAID" && !appointment.reviewSubmitted && (
-                    <button
-                      onClick={() =>
-                        setReviewForms((prev) => ({
-                          ...prev,
-                          [appointment.id]: {
-                            ...form,
-                            open: !form.open,
-                          },
-                        }))
-                      }
-                      style={ui.secondaryButton}
-                    >
-                      {form.open ? "Ẩn biểu mẫu đánh giá" : "Đánh giá bác sĩ"}
-                    </button>
-                  )}
+                  {appointment.paymentStatus === "PAID" &&
+                    !appointment.reviewSubmitted && (
+                      <button
+                        onClick={() =>
+                          setReviewForms((prev) => ({
+                            ...prev,
+                            [appointment.id]: {
+                              ...form,
+                              open: !form.open,
+                            },
+                          }))
+                        }
+                        style={ui.secondaryButton}
+                      >
+                        {form.open ? "Ẩn biểu mẫu đánh giá" : "Đánh giá bác sĩ"}
+                      </button>
+                    )}
 
                   {appointment.reviewSubmitted && (
                     <div style={createStatusPill("info")}>Đã gửi đánh giá</div>
@@ -269,7 +303,7 @@ function MyAppointmentsPage() {
                           },
                         }))
                       }
-                      placeholder="Chia sẻ trải nghiệm khám bệnh của bạn"
+                      placeholder="Chia sẻ trải nghiệm thăm khám của bạn"
                       style={ui.textarea}
                     />
 
