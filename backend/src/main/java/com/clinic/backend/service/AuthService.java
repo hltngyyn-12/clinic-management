@@ -50,14 +50,12 @@ public class AuthService {
             throw new ApiException("Email đã được sử dụng");
         }
 
-        Role role = parseRole(request.getRole());
-
         User user = new User();
         user.setUsername(request.getUsername().trim());
         user.setEmail(request.getEmail().trim());
         user.setFullName(request.getFullName().trim());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole(role);
+        user.setRole(Role.PATIENT);
 
         User savedUser = userRepository.save(user);
         createProfileIfNeeded(savedUser);
@@ -176,9 +174,6 @@ public class AuthService {
             throw new ApiException("Họ và tên không được để trống");
         }
 
-        if (isBlank(request.getRole())) {
-            throw new ApiException("Vai trò không được để trống");
-        }
     }
 
     private void validateLoginRequest(LoginRequest request) {
@@ -192,14 +187,6 @@ public class AuthService {
 
         if (isBlank(request.getPassword())) {
             throw new ApiException("Mật khẩu không được để trống");
-        }
-    }
-
-    private Role parseRole(String role) {
-        try {
-            return Role.valueOf(role.trim().toUpperCase());
-        } catch (Exception e) {
-            throw new ApiException("Vai trò không hợp lệ. Chỉ chấp nhận: ADMIN, DOCTOR, PATIENT");
         }
     }
 

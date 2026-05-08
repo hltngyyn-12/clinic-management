@@ -11,7 +11,6 @@ function RegisterPage() {
     email: "",
     password: "",
     fullName: "",
-    role: "PATIENT",
   });
 
   const [loading, setLoading] = useState(false);
